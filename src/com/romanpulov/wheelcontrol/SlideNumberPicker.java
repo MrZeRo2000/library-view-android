@@ -86,10 +86,15 @@ public class SlideNumberPicker extends View implements GestureDetector.OnGesture
                     mScroller.computeScrollOffset();
                     Log.d("onFling", "getCurrY = " + mScroller.getCurrY());
                     //setPieRotation(mScroller.getCurrY());
+                    
+                    scrollBy(0, mScroller.getFinalY() - mScroller.getCurrY());
+                    
                 } else {
                     mScrollAnimator.cancel();
                     Log.d("onFling", "cancel");
-                    //onScrollFinished();
+                    //onScrollFinished();        
+                    
+                    
                 }
             }
         });
@@ -144,6 +149,8 @@ public class SlideNumberPicker extends View implements GestureDetector.OnGesture
 		super.onDraw(canvas);
 		canvas.drawRect(0, 0, getWidth(), getHeight(), mPaint);
 		canvas.drawText(mTextValue, 25, 25, mPaint);
+		Log.d("onDraw", "ScrollY=" + getScrollY());
+		
 	}
 	
 	@Override
@@ -180,8 +187,10 @@ public class SlideNumberPicker extends View implements GestureDetector.OnGesture
 	}
 
 	@Override
-	public boolean onScroll(MotionEvent arg0, MotionEvent arg1, float arg2,
-			float arg3) {
+	public boolean onScroll(MotionEvent arg0, MotionEvent arg1, float distanceX, float distanceY) {
+		Log.d("onScroll", "onScroll");
+		
+		scrollBy(0, (int) distanceY);
 		
 		return false;
 	}
@@ -200,8 +209,8 @@ public class SlideNumberPicker extends View implements GestureDetector.OnGesture
 	private void fling(int velocityX, int velocityY) {		
 		
 		
-		int currentX = 25;
-		int currentY = 25;
+		int currentX = getWidth() / 2;
+		int currentY = getHeight() / 2;
 		
 		
 		mScroller.fling(currentX, currentY, velocityX / SCALE, velocityY / SCALE, 0, getWidth(), 0, getHeight());	
@@ -212,6 +221,5 @@ public class SlideNumberPicker extends View implements GestureDetector.OnGesture
         postInvalidate();        
 		
 	}
-
-
+	
 }
