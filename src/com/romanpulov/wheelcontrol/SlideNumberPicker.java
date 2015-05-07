@@ -1,5 +1,6 @@
 package com.romanpulov.wheelcontrol;
 
+import android.animation.ValueAnimator;
 import android.content.Context;
 import android.content.res.TypedArray;
 import android.graphics.Canvas;
@@ -11,9 +12,12 @@ import android.view.MotionEvent;
 import android.view.View;
 import android.view.GestureDetector;
 import android.widget.OverScroller;
+import android.widget.Scroller;
 import android.widget.Toast;
 
 public class SlideNumberPicker extends View implements GestureDetector.OnGestureListener {
+	
+	private final static int SCALE = 4;
 	
 	private String mNumberFormat;
 	private int mMin;
@@ -24,7 +28,8 @@ public class SlideNumberPicker extends View implements GestureDetector.OnGesture
 	private Paint mPaint;
 	
 	private GestureDetector mDetector; 
-	private OverScroller mScroller; 
+	private Scroller mScroller; 
+	private ValueAnimator mScrollAnimator;
 	
 	private void setValue(int value) {
 		mValue = value;
@@ -66,7 +71,29 @@ public class SlideNumberPicker extends View implements GestureDetector.OnGesture
         setValue(mMin);
         
         mDetector = new GestureDetector(getContext(), this);
-        mScroller = new OverScroller(getContext());
+        mScroller = new Scroller(getContext(), null, true);
+        
+        mScrollAnimator = ValueAnimator.ofFloat(0,1);
+        
+        mScrollAnimator.setDuration(3000);
+        
+        mScrollAnimator.addUpdateListener(new ValueAnimator.AnimatorUpdateListener() {
+            @Override
+            public void onAnimationUpdate(ValueAnimator valueAnimator) {
+            	Log.d("onFling", "onAnimationUpdate");
+            	
+                if (!mScroller.isFinished()) {
+                    mScroller.computeScrollOffset();
+                    Log.d("onFling", "getCurrY = " + mScroller.getCurrY());
+                    //setPieRotation(mScroller.getCurrY());
+                } else {
+                    mScrollAnimator.cancel();
+                    Log.d("onFling", "cancel");
+                    //onScrollFinished();
+                }
+            }
+        });
+        
 
     }
 	
@@ -170,7 +197,19 @@ public class SlideNumberPicker extends View implements GestureDetector.OnGesture
 		return false;
 	}
 	
-	private void fling(int velocityX, int velocityY) {
+	private void fling(int velocityX, int velocityY) {		
+		
+		
+		int currentX = 25;
+		int currentY = 25;
+		
+		
+		mScroller.fling(currentX, currentY, velocityX / SCALE, velocityY / SCALE, 0, getWidth(), 0, getHeight());	
+		
+        
+        mScrollAnimator.start();
+        
+        postInvalidate();        
 		
 	}
 
