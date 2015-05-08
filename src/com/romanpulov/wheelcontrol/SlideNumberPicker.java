@@ -14,6 +14,7 @@ import android.view.GestureDetector;
 import android.widget.OverScroller;
 import android.widget.Scroller;
 import android.widget.Toast;
+import android.widget.NumberPicker;
 
 public class SlideNumberPicker extends View implements GestureDetector.OnGestureListener {
 	
