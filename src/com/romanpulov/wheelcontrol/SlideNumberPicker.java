@@ -1,5 +1,7 @@
 package com.romanpulov.wheelcontrol;
 
+import java.util.HashMap;
+
 import android.animation.ValueAnimator;
 import android.content.Context;
 import android.content.res.TypedArray;
@@ -8,6 +10,7 @@ import android.graphics.Paint;
 import android.graphics.Paint.Style;
 import android.util.AttributeSet;
 import android.util.Log;
+import android.util.SparseArray;
 import android.view.MotionEvent;
 import android.view.View;
 import android.view.GestureDetector;
@@ -26,15 +29,30 @@ public class SlideNumberPicker extends View implements GestureDetector.OnGesture
 	private int mValue;
 	private String mTextValue;
 	
+	private int mCurrentScrollOffset = 0;
+	
+	private int mCurrentScrollY = 0;	
+	
+	private SparseArray<String> mDisplayValues = new SparseArray<String>();  
+	
 	private Paint mPaint;
 	
 	private GestureDetector mDetector; 
 	private Scroller mScroller; 
 	private ValueAnimator mScrollAnimator;
 	
+	private void initDisplayValues() {
+		
+		mDisplayValues.clear();
+		
+		for (int i = mMin; i <= mMax; i ++) {
+			mDisplayValues.put(i, String.format(mNumberFormat, i));
+		}
+	}
+	
 	private void setValue(int value) {
 		mValue = value;
-		mTextValue = String.format(mNumberFormat, mValue); 
+		mTextValue = mDisplayValues.get(mValue);
 	}
 	
 	public int getValue() {
@@ -69,6 +87,8 @@ public class SlideNumberPicker extends View implements GestureDetector.OnGesture
         mMax = 99;        
         mNumberFormat = "%02d";
         
+        initDisplayValues();
+        
         setValue(mMin);
         
         mDetector = new GestureDetector(getContext(), this);
@@ -89,6 +109,7 @@ public class SlideNumberPicker extends View implements GestureDetector.OnGesture
                     //setPieRotation(mScroller.getCurrY());
                     
                     scrollBy(0, mScroller.getFinalY() - mScroller.getCurrY());
+                    invalidate();
                     
                 } else {
                     mScrollAnimator.cancel();
@@ -147,10 +168,31 @@ public class SlideNumberPicker extends View implements GestureDetector.OnGesture
 	@Override
 	protected void onDraw(Canvas canvas) {
 		// TODO Auto-generated method stub
-		super.onDraw(canvas);
+		//super.onDraw(canvas);
+		
+		// could be something different
+		int itemHeight = getHeight();
+		
+		// control frame for testing purposes
 		canvas.drawRect(0, 0, getWidth(), getHeight(), mPaint);
-		canvas.drawText(mTextValue, 25, 25, mPaint);
-		Log.d("onDraw", "ScrollY=" + getScrollY());
+		
+		//int itemOffset;
+		//int valueOffset;
+		
+		for (int i = -1; i < 2; i ++) {
+			
+			int itemOffset = mCurrentScrollOffset % itemHeight + i * itemHeight;
+			int valueOffset = 0;
+			
+			//valueOffset = mValue + (mCurrentScrollOffset) 
+			
+			canvas.drawRect(0, itemOffset, getWidth(), getHeight() + itemOffset, mPaint);
+			canvas.drawText(mDisplayValues.get(valueOffset), getWidth() / 2, getHeight() / 2 + itemOffset, mPaint);
+			
+			Log.d("onDraw", "mTextValue=" + mTextValue + ", itemOffset = " + itemOffset);
+		}
+		
+		
 		
 	}
 	
@@ -158,9 +200,26 @@ public class SlideNumberPicker extends View implements GestureDetector.OnGesture
 	public boolean onTouchEvent(MotionEvent event) {
 		// TODO Auto-generated method stub
 		
+		if (this.mDetector.onTouchEvent(event))
+			return true;
 		
-		return this.mDetector.onTouchEvent(event);
+		int action = event.getActionMasked();
+		 switch (action) {
+		 	case MotionEvent.ACTION_MOVE:
+		 		Log.d("onTouchEvent", "Move");
+		 		scrollBy(0, (int) event.getY() - mCurrentScrollY);
+                invalidate();
+                mCurrentScrollY = (int) event.getY();
+		 		break;
+		 	case MotionEvent.ACTION_UP:
+		 		Log.d("onTouchEvent", "Up");
+		 		break;
+		 	case MotionEvent.ACTION_CANCEL:	
+		 		Log.d("onTouchEvent", "Cancel");
+		 		break;		 		
+		 }
 		
+		return true;
 		//return super.onTouchEvent(event);
 	}
 
@@ -168,7 +227,7 @@ public class SlideNumberPicker extends View implements GestureDetector.OnGesture
 	public boolean onDown(MotionEvent arg0) {
 		
 		mScroller.forceFinished(true);
-		
+		mCurrentScrollY = (int)arg0.getY();
 		// need to process onDown further
 		return true;
 	}
@@ -186,12 +245,18 @@ public class SlideNumberPicker extends View implements GestureDetector.OnGesture
 		// TODO Auto-generated method stub
 		
 	}
+	
+	@Override
+	public void scrollBy(int x, int y) {
+		mCurrentScrollOffset += y;
+	}
 
 	@Override
 	public boolean onScroll(MotionEvent arg0, MotionEvent arg1, float distanceX, float distanceY) {
 		Log.d("onScroll", "onScroll");
 		
-		scrollBy(0, (int) distanceY);
+		//scrollBy(0, (int) distanceY);
+		//mCurrentScrollOffset += distanceY;
 		
 		return false;
 	}
@@ -214,7 +279,7 @@ public class SlideNumberPicker extends View implements GestureDetector.OnGesture
 		int currentY = getHeight() / 2;
 		
 		
-		mScroller.fling(currentX, currentY, velocityX / SCALE, velocityY / SCALE, 0, getWidth(), 0, getHeight());	
+		mScroller.fling(currentX, currentY, velocityX / SCALE, velocityY / SCALE, 0, getWidth(), 0, Integer.MAX_VALUE);	
 		
         
         mScrollAnimator.start();
