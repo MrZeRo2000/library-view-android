@@ -31,7 +31,13 @@ public class SlideNumberPicker extends View implements GestureDetector.OnGesture
 	
 	private int mCurrentScrollOffset = 0;
 	
-	private int mCurrentScrollY = 0;	
+	private int mCurrentValueOffset;
+	private int mCurrentValue;
+	private int mNextValue;
+	
+	
+	private int mCurrentScrollY = 0;
+	private int mItemHeight = 0;
 	
 	private SparseArray<String> mDisplayValues = new SparseArray<String>();  
 	
@@ -123,7 +129,14 @@ public class SlideNumberPicker extends View implements GestureDetector.OnGesture
         
 
     }
-	
+    
+    @Override
+    protected void onSizeChanged(int w, int h, int oldw, int oldh) {
+    	// TODO Auto-generated method stub
+    	super.onSizeChanged(w, h, oldw, oldh);
+    	mItemHeight = h;
+    }
+    
 	@Override
 	protected void onMeasure(int widthMeasureSpec, int heightMeasureSpec) {		
 		setMeasuredDimension(measureWidth(widthMeasureSpec),
@@ -170,28 +183,32 @@ public class SlideNumberPicker extends View implements GestureDetector.OnGesture
 		// TODO Auto-generated method stub
 		//super.onDraw(canvas);
 		
-		// could be something different
-		int itemHeight = getHeight();
 		
 		// control frame for testing purposes
 		canvas.drawRect(0, 0, getWidth(), getHeight(), mPaint);
 		
-		//int itemOffset;
-		//int valueOffset;
+		int itemOffset = (mCurrentScrollOffset > 0) ? mCurrentScrollOffset % mItemHeight - mItemHeight : mCurrentScrollOffset % mItemHeight;
 		
+		canvas.drawRect(0, itemOffset, getWidth(), getHeight() + itemOffset, mPaint);
+		canvas.drawText(mDisplayValues.get(mCurrentValue), getWidth() / 2, getHeight() / 2 + itemOffset, mPaint);
+		
+		itemOffset += mItemHeight;
+		canvas.drawRect(0, itemOffset, getWidth(), getHeight() + itemOffset, mPaint);
+		canvas.drawText(mDisplayValues.get(mNextValue), getWidth() / 2, getHeight() / 2 + itemOffset, mPaint);
+		
+		
+/*		
 		for (int i = -1; i < 2; i ++) {
 			
 			int itemOffset = mCurrentScrollOffset % itemHeight + i * itemHeight;
 			int valueOffset = 0;
-			
-			//valueOffset = mValue + (mCurrentScrollOffset) 
 			
 			canvas.drawRect(0, itemOffset, getWidth(), getHeight() + itemOffset, mPaint);
 			canvas.drawText(mDisplayValues.get(valueOffset), getWidth() / 2, getHeight() / 2 + itemOffset, mPaint);
 			
 			Log.d("onDraw", "mTextValue=" + mTextValue + ", itemOffset = " + itemOffset);
 		}
-		
+	*/	
 		
 		
 	}
@@ -235,7 +252,7 @@ public class SlideNumberPicker extends View implements GestureDetector.OnGesture
 	@Override
 	public boolean onFling(MotionEvent e1, MotionEvent e2, float velocityX, float velocityY) {
 		// TODO Auto-generated method stub
-		fling((int) -velocityX, (int) -velocityY);
+		fling((int) velocityX, (int) velocityY);
 		Log.d("onFling", "VelocityX = " + velocityX + ", VelocityY = " + velocityY);
         return true;
 	}
@@ -248,12 +265,29 @@ public class SlideNumberPicker extends View implements GestureDetector.OnGesture
 	
 	@Override
 	public void scrollBy(int x, int y) {
+		
 		mCurrentScrollOffset += y;
+		
+		mCurrentValueOffset = -mCurrentScrollOffset / mItemHeight;
+		
+		if (mCurrentScrollOffset <= 0) {
+			
+			mCurrentValue = (mValue + mCurrentValueOffset) % (mMax - mMin + 1);
+			mNextValue = (mValue + 1 + mCurrentValueOffset) % (mMax - mMin + 1);
+			
+		} else {
+
+			mCurrentValue = (mMax - (mValue - mCurrentValueOffset)) % (mMax - mMin + 1);
+			mNextValue = (mMax - (mValue - 1 - mCurrentValueOffset)) % (mMax - mMin + 1);
+			
+		}
+		
+		Log.d("scroll", "mCurrentScrollOffset = " + mCurrentScrollOffset + ", mCurrentValue = " + mCurrentValue + ", mNextValue = " + mNextValue);
 	}
 
 	@Override
 	public boolean onScroll(MotionEvent arg0, MotionEvent arg1, float distanceX, float distanceY) {
-		Log.d("onScroll", "onScroll");
+		//Log.d("onScroll", "onScroll");
 		
 		//scrollBy(0, (int) distanceY);
 		//mCurrentScrollOffset += distanceY;
