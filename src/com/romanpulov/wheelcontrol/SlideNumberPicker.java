@@ -327,7 +327,9 @@ public class SlideNumberPicker extends View implements GestureDetector.OnGesture
 		//int mNewCalcValue = (mValue + Math.round((float) -mCurrentScrollOffset / mItemHeight)) % (mMax - mMin + 1);
 		int mNewCalcValue = 0;
 		
-		int currentScrollValue = mCurrentScrollOffset % mItemHeight;		
+		int currentScrollValue = mCurrentScrollOffset % mItemHeight;	
+		
+		
 		
 		int mNewScrollOffset = - (mNewCalcValue - mValue) * mItemHeight;
 
