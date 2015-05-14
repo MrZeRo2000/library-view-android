@@ -120,7 +120,7 @@ public class SlideNumberPicker extends View implements GestureDetector.OnGesture
                 	mCurrentScroller.computeScrollOffset();
                     Log.d("onFling", "getCurrY = " + mCurrentScroller.getCurrY() + ", getFinalY = " + mCurrentScroller.getFinalY());
                     
-                    if (0 == mCurrentAnimateScrollY) {
+                    if ((0 == mCurrentAnimateScrollY) || (Integer.MAX_VALUE == mCurrentAnimateScrollY)) {
                     	mCurrentAnimateScrollY = mCurrentScroller.getStartY();
                     }
                     
@@ -260,6 +260,7 @@ public class SlideNumberPicker extends View implements GestureDetector.OnGesture
 	public boolean onDown(MotionEvent arg0) {
 		
 		mScroller.forceFinished(true);
+		mAdjustScroller.forceFinished(true);
 		mCurrentScrollY = (int)arg0.getY();
 		// need to process onDown further
 		return true;
@@ -268,7 +269,9 @@ public class SlideNumberPicker extends View implements GestureDetector.OnGesture
 	@Override
 	public boolean onFling(MotionEvent e1, MotionEvent e2, float velocityX, float velocityY) {
 		// TODO Auto-generated method stub
+		
 		fling((int) velocityX, (int) velocityY);
+		
 		Log.d("onFling", "VelocityX = " + velocityX + ", VelocityY = " + velocityY);
         return true;
 	}
@@ -328,9 +331,18 @@ public class SlideNumberPicker extends View implements GestureDetector.OnGesture
 		int currentY = getHeight() / 2;
 		
 		//currentX = currentY = 0;		
-		currentY = Integer.MAX_VALUE / 2;
+		currentY = 0;
 		
-		mScroller.fling(0, currentY, velocityX / FLING_VELOCITY_SCALE_FACTOR, velocityY / FLING_VELOCITY_SCALE_FACTOR, 0, 0, 0, Integer.MAX_VALUE);			
+		
+		
+        if (velocityY > 0) {
+            mScroller.fling(0, 0, 0, velocityY, 0, 0, 0, Integer.MAX_VALUE);
+        } else {
+            mScroller.fling(0, Integer.MAX_VALUE, 0, velocityY, 0, 0, 0, Integer.MAX_VALUE);
+        }
+		
+		
+		//mScroller.fling(0, currentY, 0, velocityY / FLING_VELOCITY_SCALE_FACTOR, 0, 0, 0, Integer.MAX_VALUE);			
 		
 		mCurrentScroller = mScroller;
         
