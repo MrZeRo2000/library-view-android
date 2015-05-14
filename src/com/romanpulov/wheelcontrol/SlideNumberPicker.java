@@ -134,6 +134,10 @@ public class SlideNumberPicker extends View implements GestureDetector.OnGesture
                 } else {
                     mScrollAnimator.cancel();
                     Log.d("onFling", "cancel");
+                    if (mScroller == mCurrentScroller) {
+                    	Log.d("onFling", "mScroller cancel");
+                    	finishScroll();
+                    }
                 }
             }
         });
