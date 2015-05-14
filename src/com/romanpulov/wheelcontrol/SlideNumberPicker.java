@@ -21,7 +21,10 @@ import android.widget.NumberPicker;
 
 public class SlideNumberPicker extends View implements GestureDetector.OnGestureListener {
 	
-	private final static int SCALE = 4;
+	//fling gesture velocity correction factor
+	private final static int FLING_VELOCITY_SCALE_FACTOR = 4;
+	//adjust scroll duration
+	private final static int ADJUST_SCROLL_DURATION = 500;
 	
 	private String mNumberFormat;
 	private int mMin;
@@ -31,12 +34,14 @@ public class SlideNumberPicker extends View implements GestureDetector.OnGesture
 	
 	private int mCurrentScrollOffset = 0;
 	
+	
 	private int mCurrentValueOffset;
 	private int mCurrentValue;
 	private int mNextValue;
 	
 	
 	private int mCurrentScrollY = 0;
+	private int mCurrentAnimateScrollY = 0;
 	private int mItemHeight = 0;
 	
 	private SparseArray<String> mDisplayValues = new SparseArray<String>();  
@@ -113,8 +118,17 @@ public class SlideNumberPicker extends View implements GestureDetector.OnGesture
             	
                 if (!mCurrentScroller.isFinished()) {
                 	mCurrentScroller.computeScrollOffset();
-                    Log.d("onFling", "getCurrY = " + mCurrentScroller.getCurrY());
-                    scrollBy(0, mCurrentScroller.getFinalY() - mCurrentScroller.getCurrY());
+                    Log.d("onFling", "getCurrY = " + mCurrentScroller.getCurrY() + ", getFinalY = " + mCurrentScroller.getFinalY());
+                    
+                    if (0 == mCurrentAnimateScrollY) {
+                    	mCurrentAnimateScrollY = mCurrentScroller.getStartY();
+                    }
+                    
+                    //scrollBy(0, mCurrentScroller.getFinalY() - mCurrentScroller.getCurrY());
+                    
+                    scrollBy(0, mCurrentScroller.getCurrY() - mCurrentAnimateScrollY);
+                    
+                    mCurrentAnimateScrollY = mCurrentScroller.getCurrY();                    
                     invalidate();
                     
                 } else {
@@ -312,7 +326,7 @@ public class SlideNumberPicker extends View implements GestureDetector.OnGesture
 		//currentX = currentY = 0;		
 		currentY = Integer.MAX_VALUE / 2;
 		
-		mScroller.fling(0, currentY, velocityX / SCALE, velocityY / SCALE, 0, 0, 0, Integer.MAX_VALUE);			
+		mScroller.fling(0, currentY, velocityX / FLING_VELOCITY_SCALE_FACTOR, velocityY / FLING_VELOCITY_SCALE_FACTOR, 0, 0, 0, Integer.MAX_VALUE);			
 		
 		mCurrentScroller = mScroller;
         
@@ -333,6 +347,17 @@ public class SlideNumberPicker extends View implements GestureDetector.OnGesture
 		int mNewScrollOffset = (currentScrollValue < (mItemHeight / 2)) ? -currentScrollValue : mItemHeight - currentScrollValue;
 
 		Log.d("scrollFinish", "NewCalcValue = " + mNewCalcValue + ", mNewScrollOffset = " + mNewScrollOffset + ", currentScrollValue = " + currentScrollValue);
+		
+		//mAdjustScroller.fling(0, 0, 0, 20, 0, 0, 0, mNewScrollOffset);
+		
+		mCurrentAnimateScrollY = 0;
+		
+		mAdjustScroller.startScroll(0, 0, 0, mNewScrollOffset, ADJUST_SCROLL_DURATION);		
+		
+		mCurrentScroller = mAdjustScroller;
+		
+		mScrollAnimator.start();
+		
 	}
 	
 }
