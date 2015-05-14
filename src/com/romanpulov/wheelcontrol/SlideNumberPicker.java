@@ -118,13 +118,15 @@ public class SlideNumberPicker extends View implements GestureDetector.OnGesture
             	
                 if (!mCurrentScroller.isFinished()) {
                 	mCurrentScroller.computeScrollOffset();
-                    Log.d("onFling", "getCurrY = " + mCurrentScroller.getCurrY() + ", getFinalY = " + mCurrentScroller.getFinalY());
+                    Log.d("onFling", "getStartY = " + mCurrentScroller.getStartY() + " getCurrY = " + mCurrentScroller.getCurrY() + ", getFinalY = " + mCurrentScroller.getFinalY());
+                    Log.d("onFling", "mCurrentAnimateScrollY = " + mCurrentAnimateScrollY);
                     
                     if ((0 == mCurrentAnimateScrollY) || (Integer.MAX_VALUE == mCurrentAnimateScrollY)) {
                     	mCurrentAnimateScrollY = mCurrentScroller.getStartY();
                     }
                     
                     //scrollBy(0, mCurrentScroller.getFinalY() - mCurrentScroller.getCurrY());
+                    Log.d("onFling", "scrolling by " + (mCurrentScroller.getCurrY() - mCurrentAnimateScrollY));
                     
                     scrollBy(0, mCurrentScroller.getCurrY() - mCurrentAnimateScrollY);
                     
