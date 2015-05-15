@@ -18,6 +18,7 @@ import android.widget.OverScroller;
 import android.widget.Scroller;
 import android.widget.Toast;
 import android.widget.NumberPicker;
+import android.widget.NumberPicker.OnValueChangeListener;
 
 public class SlideNumberPicker extends View implements GestureDetector.OnGestureListener {
 	
@@ -55,6 +56,13 @@ public class SlideNumberPicker extends View implements GestureDetector.OnGesture
 	
 	private Scroller mCurrentScroller;
 	
+	private OnValueChangeListener mOnValueChangeListener;
+	
+    public interface OnValueChangeListener {
+        void onValueChange(SlideNumberPicker picker, int oldVal, int newVal);
+    }
+	
+	
 	private void initDisplayValues() {
 		
 		mDisplayValues.clear();
@@ -68,9 +76,22 @@ public class SlideNumberPicker extends View implements GestureDetector.OnGesture
 		mRange = mMax - mMin + 1;
 	}
 	
+    public void setOnValueChangedListener(OnValueChangeListener onValueChangedListener) {
+        mOnValueChangeListener = onValueChangedListener;
+    }	
+    
+    private void notifyChange(int previous, int current) {
+        if (mOnValueChangeListener != null) {
+            mOnValueChangeListener.onValueChange(this, previous, mValue);
+        }
+    }
+    
 	public void setValue(int value) {
-		mValue = value;
-		invalidate();
+		if (value != mValue) {
+			notifyChange(mValue, value);
+			mValue = value;
+			invalidate();
+		}
 	}
 	
 	public void setMax(int value) {
