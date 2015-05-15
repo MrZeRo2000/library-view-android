@@ -3,6 +3,9 @@ package com.romanpulov.wheelcontrol;
 import android.os.Bundle;
 import android.app.Activity;
 import android.view.Menu;
+import android.widget.Button;
+import android.widget.Toast;
+import android.view.View;;
 
 public class MainActivity extends Activity {
 
@@ -10,7 +13,20 @@ public class MainActivity extends Activity {
 	protected void onCreate(Bundle savedInstanceState) {
 		super.onCreate(savedInstanceState);
 		setContentView(R.layout.activity_main);
-	}
+		
+	    final Button button = (Button) findViewById(R.id.button1);
+	    button.setOnClickListener(new View.OnClickListener() {
+	        public void onClick(View v) {
+	            // Perform action on click
+	        	
+	        	final SlideNumberPicker picker = (SlideNumberPicker) findViewById(R.id.slideNumberPicker);
+	        	
+	        	Toast.makeText(getBaseContext(), "Value=" + picker.getValue(), Toast.LENGTH_SHORT).show();
+	        }
+	    });
+		
+	};
+	
 
 	@Override
 	public boolean onCreateOptionsMenu(Menu menu) {
@@ -18,5 +34,6 @@ public class MainActivity extends Activity {
 		getMenuInflater().inflate(R.menu.main, menu);
 		return true;
 	}
+	
 
 }

@@ -30,15 +30,15 @@ public class SlideNumberPicker extends View implements GestureDetector.OnGesture
 	private int mMin;
 	private int mMax;
 	private int mValue;
-	private String mTextValue;
+	
+	// calculated based on mMax and mMin
+	private int mRange;
 	
 	private int mCurrentScrollOffset = 0;
 	
-	
-	private int mCurrentValueOffset;
 	private int mCurrentValue;
 	private int mNextValue;
-	
+	private int mNewCalcValue;
 	
 	private int mCurrentScrollY = 0;
 	private int mCurrentAnimateScrollY = 0;
@@ -64,9 +64,23 @@ public class SlideNumberPicker extends View implements GestureDetector.OnGesture
 		}
 	}
 	
-	private void setValue(int value) {
+	private void updateRange() {
+		mRange = mMax - mMin + 1;
+	}
+	
+	public void setValue(int value) {
 		mValue = value;
-		mTextValue = mDisplayValues.get(mValue);
+		invalidate();
+	}
+	
+	public void setMax(int value) {
+		mMax = value;
+		updateRange();		
+	}
+	
+	public void setMin(int value) {
+		mMin = value;
+		updateRange();
 	}
 	
 	public int getValue() {
@@ -101,6 +115,8 @@ public class SlideNumberPicker extends View implements GestureDetector.OnGesture
         mMax = 99;        
         mNumberFormat = "%02d";
         
+        updateRange();
+        
         initDisplayValues();
         
         setValue(mMin);
@@ -118,16 +134,15 @@ public class SlideNumberPicker extends View implements GestureDetector.OnGesture
             	
                 if (!mCurrentScroller.isFinished()) {
                 	mCurrentScroller.computeScrollOffset();
-                    Log.d("onFling", "getStartY = " + mCurrentScroller.getStartY() + " getCurrY = " + mCurrentScroller.getCurrY() + ", getFinalY = " + mCurrentScroller.getFinalY());
+
+                	Log.d("onFling", "getStartY = " + mCurrentScroller.getStartY() + " getCurrY = " + mCurrentScroller.getCurrY() + ", getFinalY = " + mCurrentScroller.getFinalY());
                     Log.d("onFling", "mCurrentAnimateScrollY = " + mCurrentAnimateScrollY);
                     
                     if ((0 == mCurrentAnimateScrollY) || (Integer.MAX_VALUE == mCurrentAnimateScrollY)) {
                     	mCurrentAnimateScrollY = mCurrentScroller.getStartY();
                     }
                     
-                    //scrollBy(0, mCurrentScroller.getFinalY() - mCurrentScroller.getCurrY());
-                    Log.d("onFling", "scrolling by " + (mCurrentScroller.getCurrY() - mCurrentAnimateScrollY));
-                    
+                    Log.d("onFling", "scrolling by " + (mCurrentScroller.getCurrY() - mCurrentAnimateScrollY));                    
                     scrollBy(0, mCurrentScroller.getCurrY() - mCurrentAnimateScrollY);
                     
                     mCurrentAnimateScrollY = mCurrentScroller.getCurrY();                    
@@ -140,8 +155,17 @@ public class SlideNumberPicker extends View implements GestureDetector.OnGesture
                     
                     Log.d("onFling", "cancel");
                     if (mScroller == mCurrentScroller) {
+                    	
+                    	// scroll to nearest value
                     	Log.d("onFling", "mScroller cancel");
                     	finishScroll();
+                    } else {
+                    	
+                    	//scroll completed
+                    	mCurrentScrollOffset = 0;
+                    	mCurrentValue = mNextValue = mNewCalcValue;                    	
+                    	setValue(mNewCalcValue);
+                    	
                     }
                 }
             }
@@ -292,21 +316,29 @@ public class SlideNumberPicker extends View implements GestureDetector.OnGesture
 		
 		mCurrentScrollOffset += y;
 		
-		mCurrentValueOffset = (-mCurrentScrollOffset / mItemHeight) % (mMax - mMin + 1);
+		int currentValueOffset = (-mCurrentScrollOffset / mItemHeight) % mRange;
 	
+		// added mRange to ensure values are > 0
+		
 		if (mCurrentScrollOffset <= 0) {
 			
-			mCurrentValue = (mValue + mCurrentValueOffset) % (mMax - mMin + 1);
-			mNextValue = (mValue + 1 + mCurrentValueOffset) % (mMax - mMin + 1);
+			mCurrentValue = (mValue + currentValueOffset + mRange) % mRange;
+			mNextValue = (mValue + 1 + currentValueOffset + mRange) % mRange;
 			
 		} else {
 
-			mCurrentValue = (mMax - (mValue - mCurrentValueOffset)) % (mMax - mMin + 1);
-			mNextValue = (mMax - (mValue - 1 - mCurrentValueOffset)) % (mMax - mMin + 1);
+			mCurrentValue = (mValue - 1 + currentValueOffset + mRange) % mRange;
+			mNextValue = (mValue + currentValueOffset + mRange) % mRange;
+			
+			/*
+			 * works when mValue = 0 only
+			mCurrentValue = (mMax - (mValue - currentValueOffset)) % (mMax - mMin + 1);
+			mNextValue = (mMax - (mValue - 1 - currentValueOffset)) % (mMax - mMin + 1);
+			*/
 			
 		}
 		
-		Log.d("scroll", "mCurrentScrollOffset = " + mCurrentScrollOffset +  ", mCurrentValueOffset =" + mCurrentValueOffset + ", mCurrentValue = " + mCurrentValue + ", mNextValue = " + mNextValue);
+		Log.d("scroll", "mCurrentScrollOffset = " + mCurrentScrollOffset +  ", currentValueOffset =" + currentValueOffset + ", mCurrentValue = " + mCurrentValue + ", mNextValue = " + mNextValue);
 
 	}
 
@@ -359,23 +391,16 @@ public class SlideNumberPicker extends View implements GestureDetector.OnGesture
 	
 	private void finishScroll() {
 		
-		//int mNewCalcValue = (mValue + Math.round((float) -mCurrentScrollOffset / mItemHeight)) % (mMax - mMin + 1);
-		
 		int currentScrollValue = (mCurrentScrollOffset > 0)? mCurrentScrollOffset % mItemHeight : mItemHeight + mCurrentScrollOffset % mItemHeight;
 		
-		int mNewCalcValue = (currentScrollValue < (mItemHeight / 2)) ? mNextValue : mCurrentValue;
+		mNewCalcValue = (currentScrollValue < (mItemHeight / 2)) ? mNextValue : mCurrentValue;
 		
-		int mNewScrollOffset = (currentScrollValue < (mItemHeight / 2)) ? -currentScrollValue : mItemHeight - currentScrollValue;
-
-		Log.d("scrollFinish", "NewCalcValue = " + mNewCalcValue + ", mNewScrollOffset = " + mNewScrollOffset + ", currentScrollValue = " + currentScrollValue);
+		int newScrollOffset = (currentScrollValue < (mItemHeight / 2)) ? -currentScrollValue : mItemHeight - currentScrollValue;
+		Log.d("scrollFinish", "NewCalcValue = " + mNewCalcValue + ", mNewScrollOffset = " + newScrollOffset + ", currentScrollValue = " + currentScrollValue);
 		
-		//mAdjustScroller.fling(0, 0, 0, 20, 0, 0, 0, mNewScrollOffset);
-		
-		
-		mAdjustScroller.startScroll(0, 0, 0, mNewScrollOffset, ADJUST_SCROLL_DURATION);		
-		
+		// scroll to the nearest value
+		mAdjustScroller.startScroll(0, 0, 0, newScrollOffset, ADJUST_SCROLL_DURATION);		
 		mCurrentScroller = mAdjustScroller;
-		
 		mScrollAnimator.start();
 		
 	}

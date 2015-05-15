@@ -14,14 +14,22 @@
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:text="@string/hello_world" />
+    <Button
+		android:id="@+id/button1"
+		android:layout_width="100dp"        
+		android:layout_height="50dp"
+		android:text="Get value"
+		android:layout_below="@+id/textView"
+        android:clickable="true"                
+        />    
     <com.romanpulov.wheelcontrol.SlideNumberPicker 
         android:id="@+id/slideNumberPicker"
         android:layout_width="50dp"
         android:layout_height="50dp"
-        android:layout_below="@+id/textView"                
+        android:layout_below="@+id/button1"
         />
     <TimePicker
-        android:id="@+id/timePicker"
+        android:id="@+id/timePicker1"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"  
         android:layout_below="@+id/slideNumberPicker"           
@@ -32,7 +40,7 @@
             android:layout_height="wrap_content"
             android:focusable="true"
             android:focusableInTouchMode="true"
-            android:layout_below="@+id/timePicker"               
+            android:layout_below="@+id/timePicker1"               
             />
 
 </RelativeLayout>
