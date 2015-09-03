@@ -1,7 +1,5 @@
 package com.romanpulov.wheelcontrol;
 
-import java.util.HashMap;
-
 import android.animation.ValueAnimator;
 import android.content.Context;
 import android.content.res.TypedArray;
@@ -11,14 +9,10 @@ import android.graphics.Paint.Style;
 import android.util.AttributeSet;
 import android.util.Log;
 import android.util.SparseArray;
+import android.view.GestureDetector;
 import android.view.MotionEvent;
 import android.view.View;
-import android.view.GestureDetector;
-import android.widget.OverScroller;
 import android.widget.Scroller;
-import android.widget.Toast;
-import android.widget.NumberPicker;
-import android.widget.NumberPicker.OnValueChangeListener;
 
 public class SlideNumberPicker extends View implements GestureDetector.OnGestureListener {
 	
@@ -26,6 +20,9 @@ public class SlideNumberPicker extends View implements GestureDetector.OnGesture
 	private final static int FLING_VELOCITY_SCALE_FACTOR = 4;
 	//adjust scroll duration
 	private final static int ADJUST_SCROLL_DURATION = 500;
+	@SuppressWarnings("unused")
+	private static final int DEFAULT_MAX = 99;
+    private static final int DEFAULT_MIN = 0;	
 	
 	private String mNumberFormat;
 	private int mMin;
@@ -109,31 +106,35 @@ public class SlideNumberPicker extends View implements GestureDetector.OnGesture
 	}
 	
 	public SlideNumberPicker(Context context) {
-		super(context);
-		initNumberPicker();
+		super(context, null);
+		//initNumberPicker();
 		// TODO Auto-generated constructor stub
 	}
 	
 
 	public SlideNumberPicker(Context context, AttributeSet attrs) {
 		super(context, attrs);
-		initNumberPicker();		
 		
-		TypedArray a = context.obtainStyledAttributes(attrs,
-                R.styleable.SlideNumberPicker);
-		
-		
-	}
-	
-    private final void initNumberPicker() {
         mPaint = new Paint();
         mPaint.setAntiAlias(true);
         mPaint.setTextSize(16);
         mPaint.setColor(0xFF000000);
         mPaint.setStyle(Style.STROKE);
+
+        /*
+		TypedArray a = context.obtainStyledAttributes(attrs,
+                R.styleable.SlideNumberPicker);
+        
+        mMin = a.getInt(R.styleable.SlideNumberPicker_min, DEFAULT_MIN);
+        mMax = a.getInt(R.styleable.SlideNumberPicker_max, DEFAULT_MAX);        
+        
+        a.recycle();
+        */
         
         mMin = 0;
-        mMax = 99;        
+        mMax = 59;
+        mValue = mMin;
+        
         mNumberFormat = "%02d";
         
         updateRange();
@@ -190,11 +191,10 @@ public class SlideNumberPicker extends View implements GestureDetector.OnGesture
                     }
                 }
             }
-        });
-        
-
-    }
-    
+        });	
+		
+	}
+	
     @Override
     protected void onSizeChanged(int w, int h, int oldw, int oldh) {
     	// TODO Auto-generated method stub
