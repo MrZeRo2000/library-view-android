@@ -4,5 +4,6 @@
         <attr name = "numberFormat" format = "string"/>
         <attr name = "min" format = "integer"/>
         <attr name = "max" format = "integer"/>
+        <attr name="android:background" />
     </declare-styleable>
 </resources>

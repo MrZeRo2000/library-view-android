@@ -1,8 +1,9 @@
 <RelativeLayout xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:tools="http://schemas.android.com/tools"
-    xmlns:custom="http://schemas.android.com/apk/res/com.romanpulov.wheelcontrol"
+    xmlns:app="http://schemas.android.com/apk/res/com.romanpulov.wheelcontrol"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
+    android:background="#FFFFFF00"
     android:paddingBottom="@dimen/activity_vertical_margin"
     android:paddingLeft="@dimen/activity_horizontal_margin"
     android:paddingRight="@dimen/activity_horizontal_margin"
@@ -27,7 +28,7 @@
         android:layout_width="50dp"
         android:layout_height="50dp"
         android:layout_below="@+id/button1"
-        custom:min="5"
+        app:min="5"
         />
     <TimePicker
         android:id="@+id/timePicker1"

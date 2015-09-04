@@ -2,8 +2,10 @@ package com.romanpulov.wheelcontrol;
 
 import android.animation.ValueAnimator;
 import android.content.Context;
+import android.content.res.ColorStateList;
 import android.content.res.TypedArray;
 import android.graphics.Canvas;
+import android.graphics.Color;
 import android.graphics.Paint;
 import android.graphics.Paint.Style;
 import android.util.AttributeSet;
@@ -15,12 +17,15 @@ import android.view.View;
 import android.widget.Scroller;
 
 public class SlideNumberPicker extends View implements GestureDetector.OnGestureListener {
-	
+	//main scroll animation duration
+	private static final int SCROLL_ANIMATION_DURATION = 3000;
+	//adjust scroll duration
+	private final static int ADJUST_SCROLL_DURATION = 500;	
 	//fling gesture velocity correction factor
 	private final static int FLING_VELOCITY_SCALE_FACTOR = 4;
-	//adjust scroll duration
-	private final static int ADJUST_SCROLL_DURATION = 500;
-	@SuppressWarnings("unused")
+	
+	private static final int DEFAULT_TEXTCOLOR = Color.BLUE;
+	
 	private static final int DEFAULT_MAX = 99;
     private static final int DEFAULT_MIN = 0;	
 	
@@ -28,6 +33,10 @@ public class SlideNumberPicker extends View implements GestureDetector.OnGesture
 	private int mMin;
 	private int mMax;
 	private int mValue;
+	
+	//text appearance
+	private int mTextSize;
+	private int mTextColor; 
 	
 	// calculated based on mMax and mMin
 	private int mRange;
@@ -118,22 +127,17 @@ public class SlideNumberPicker extends View implements GestureDetector.OnGesture
         mPaint = new Paint();
         mPaint.setAntiAlias(true);
         mPaint.setTextSize(16);
-        mPaint.setColor(0xFF000000);
+        //mPaint.setColor(0xFF000000);
         mPaint.setStyle(Style.STROKE);
 
-        /*
-		TypedArray a = context.obtainStyledAttributes(attrs,
+		TypedArray attributesArray = context.obtainStyledAttributes(attrs,
                 R.styleable.SlideNumberPicker);
         
-        mMin = a.getInt(R.styleable.SlideNumberPicker_min, DEFAULT_MIN);
-        mMax = a.getInt(R.styleable.SlideNumberPicker_max, DEFAULT_MAX);        
+        mMin = attributesArray.getInt(R.styleable.SlideNumberPicker_min, DEFAULT_MIN);
+        mMax = attributesArray.getInt(R.styleable.SlideNumberPicker_max, DEFAULT_MAX);    
+        mTextColor = attributesArray.getColor(R.styleable.SlideNumberPicker_textColor, DEFAULT_TEXTCOLOR);
         
-        a.recycle();
-        */
-        
-        mMin = 0;
-        mMax = 59;
-        mValue = mMin;
+        attributesArray.recycle();
         
         mNumberFormat = "%02d";
         
@@ -142,13 +146,14 @@ public class SlideNumberPicker extends View implements GestureDetector.OnGesture
         initDisplayValues();
         
         setValue(mMin);
+        mCurrentValue = mNextValue = mValue;
         
         mDetector = new GestureDetector(getContext(), this);
         mScroller = new Scroller(getContext(), null, true);
         mAdjustScroller = new Scroller(getContext(), null, true);
         
         mScrollAnimator = ValueAnimator.ofFloat(0,1);        
-        mScrollAnimator.setDuration(3000);        
+        mScrollAnimator.setDuration(SCROLL_ANIMATION_DURATION);        
         mScrollAnimator.addUpdateListener(new ValueAnimator.AnimatorUpdateListener() {
             @Override
             public void onAnimationUpdate(ValueAnimator valueAnimator) {
@@ -240,14 +245,14 @@ public class SlideNumberPicker extends View implements GestureDetector.OnGesture
         }
         
         return result;
-		
 	}
 	
 	@Override
 	protected void onDraw(Canvas canvas) {
-		// TODO Auto-generated method stub
-		//super.onDraw(canvas);
+		//draw background
+		super.onDraw(canvas);
 		
+		Log.d("onDraw", "mCurrentValue=" + mCurrentValue + ", mNextValue = " + mNextValue);
 		
 		// control frame for testing purposes
 		canvas.drawRect(0, 0, getWidth(), getHeight(), mPaint);
@@ -255,6 +260,7 @@ public class SlideNumberPicker extends View implements GestureDetector.OnGesture
 		int itemOffset = (mCurrentScrollOffset > 0) ? mCurrentScrollOffset % mItemHeight - mItemHeight : mCurrentScrollOffset % mItemHeight;
 		
 		canvas.drawRect(0, itemOffset, getWidth(), getHeight() + itemOffset, mPaint);
+		mPaint.setColor(mTextColor);
 		canvas.drawText(mDisplayValues.get(mCurrentValue), getWidth() / 2, getHeight() / 2 + itemOffset, mPaint);
 		
 		itemOffset += mItemHeight;
@@ -318,7 +324,6 @@ public class SlideNumberPicker extends View implements GestureDetector.OnGesture
 
 	@Override
 	public boolean onFling(MotionEvent e1, MotionEvent e2, float velocityX, float velocityY) {
-		// TODO Auto-generated method stub
 		
 		fling((int) velocityX, (int) velocityY);
 		
@@ -336,31 +341,18 @@ public class SlideNumberPicker extends View implements GestureDetector.OnGesture
 	public void scrollBy(int x, int y) {
 		
 		mCurrentScrollOffset += y;
-		
 		int currentValueOffset = (-mCurrentScrollOffset / mItemHeight) % mRange;
 	
 		// added mRange to ensure values are > 0
-		
 		if (mCurrentScrollOffset <= 0) {
-			
-			mCurrentValue = (mValue + currentValueOffset + mRange) % mRange;
-			mNextValue = (mValue + 1 + currentValueOffset + mRange) % mRange;
-			
+			mCurrentValue = mMin + (mValue - mMin + currentValueOffset + mRange) % mRange;
+			mNextValue = mMin + (mValue - mMin + 1 + currentValueOffset + mRange) % mRange;
 		} else {
-
-			mCurrentValue = (mValue - 1 + currentValueOffset + mRange) % mRange;
-			mNextValue = (mValue + currentValueOffset + mRange) % mRange;
-			
-			/*
-			 * works when mValue = 0 only
-			mCurrentValue = (mMax - (mValue - currentValueOffset)) % (mMax - mMin + 1);
-			mNextValue = (mMax - (mValue - 1 - currentValueOffset)) % (mMax - mMin + 1);
-			*/
-			
+			mCurrentValue = mMin + (mValue - mMin - 1 + currentValueOffset + mRange) % mRange;
+			mNextValue = mMin + (mValue - mMin + currentValueOffset + mRange) % mRange;
 		}
 		
 		Log.d("scroll", "mCurrentScrollOffset = " + mCurrentScrollOffset +  ", currentValueOffset =" + currentValueOffset + ", mCurrentValue = " + mCurrentValue + ", mNextValue = " + mNextValue);
-
 	}
 
 	@Override
@@ -380,18 +372,10 @@ public class SlideNumberPicker extends View implements GestureDetector.OnGesture
 
 	@Override
 	public boolean onSingleTapUp(MotionEvent arg0) {
-
 		return false;
 	}
 	
 	private void fling(int velocityX, int velocityY) {		
-		
-		int currentY = getHeight() / 2;
-		
-		//currentX = currentY = 0;		
-		currentY = 0;
-		
-		
 		
         if (velocityY > 0) {
             mScroller.fling(0, 0, 0, velocityY, 0, 0, 0, Integer.MAX_VALUE);
@@ -399,15 +383,9 @@ public class SlideNumberPicker extends View implements GestureDetector.OnGesture
             mScroller.fling(0, Integer.MAX_VALUE, 0, velocityY, 0, 0, 0, Integer.MAX_VALUE);
         }
 		
-		
-		//mScroller.fling(0, currentY, 0, velocityY / FLING_VELOCITY_SCALE_FACTOR, 0, 0, 0, Integer.MAX_VALUE);			
-		
 		mCurrentScroller = mScroller;
-        
         mScrollAnimator.start();
-        
         postInvalidate();        
-		
 	}
 	
 	private void finishScroll() {
@@ -423,7 +401,5 @@ public class SlideNumberPicker extends View implements GestureDetector.OnGesture
 		mAdjustScroller.startScroll(0, 0, 0, newScrollOffset, ADJUST_SCROLL_DURATION);		
 		mCurrentScroller = mAdjustScroller;
 		mScrollAnimator.start();
-		
 	}
-	
 }
