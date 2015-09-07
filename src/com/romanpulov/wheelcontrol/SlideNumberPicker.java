@@ -25,6 +25,8 @@ public class SlideNumberPicker extends View implements GestureDetector.OnGesture
 	private final static int FLING_VELOCITY_SCALE_FACTOR = 4;
 	
 	private static final int DEFAULT_TEXTCOLOR = Color.BLUE;
+	private static final int DEFAULT_FRAMECOLOR = Color.BLACK;
+	private static final int DEFAULT_TEXTSIZE = 16;
 	
 	private static final int DEFAULT_MAX = 99;
     private static final int DEFAULT_MIN = 0;	
@@ -33,6 +35,9 @@ public class SlideNumberPicker extends View implements GestureDetector.OnGesture
 	private int mMin;
 	private int mMax;
 	private int mValue;
+	
+	//frame appearance
+	private int mFrameColor;
 	
 	//text appearance
 	private int mTextSize;
@@ -117,7 +122,6 @@ public class SlideNumberPicker extends View implements GestureDetector.OnGesture
 	public SlideNumberPicker(Context context) {
 		super(context, null);
 		//initNumberPicker();
-		// TODO Auto-generated constructor stub
 	}
 	
 
@@ -126,7 +130,7 @@ public class SlideNumberPicker extends View implements GestureDetector.OnGesture
 		
         mPaint = new Paint();
         mPaint.setAntiAlias(true);
-        mPaint.setTextSize(16);
+        //mPaint.setTextSize(16);
         //mPaint.setColor(0xFF000000);
         mPaint.setStyle(Style.STROKE);
 
@@ -136,6 +140,8 @@ public class SlideNumberPicker extends View implements GestureDetector.OnGesture
         mMin = attributesArray.getInt(R.styleable.SlideNumberPicker_min, DEFAULT_MIN);
         mMax = attributesArray.getInt(R.styleable.SlideNumberPicker_max, DEFAULT_MAX);    
         mTextColor = attributesArray.getColor(R.styleable.SlideNumberPicker_textColor, DEFAULT_TEXTCOLOR);
+        mFrameColor = attributesArray.getColor(R.styleable.SlideNumberPicker_frameColor, DEFAULT_FRAMECOLOR);
+        mTextSize = attributesArray.getDimensionPixelSize(R.styleable.SlideNumberPicker_textSize, DEFAULT_TEXTSIZE);
         
         attributesArray.recycle();
         
@@ -147,6 +153,7 @@ public class SlideNumberPicker extends View implements GestureDetector.OnGesture
         
         setValue(mMin);
         mCurrentValue = mNextValue = mValue;
+        mPaint.setTextSize(mTextSize);
         
         mDetector = new GestureDetector(getContext(), this);
         mScroller = new Scroller(getContext(), null, true);
@@ -255,18 +262,21 @@ public class SlideNumberPicker extends View implements GestureDetector.OnGesture
 		Log.d("onDraw", "mCurrentValue=" + mCurrentValue + ", mNextValue = " + mNextValue);
 		
 		// control frame for testing purposes
+		mPaint.setColor(mFrameColor);
 		canvas.drawRect(0, 0, getWidth(), getHeight(), mPaint);
 		
-		int itemOffset = (mCurrentScrollOffset > 0) ? mCurrentScrollOffset % mItemHeight - mItemHeight : mCurrentScrollOffset % mItemHeight;
-		
+		// draw current value
+		int itemOffset = (mCurrentScrollOffset > 0) ? mCurrentScrollOffset % mItemHeight - mItemHeight : mCurrentScrollOffset % mItemHeight;		
 		canvas.drawRect(0, itemOffset, getWidth(), getHeight() + itemOffset, mPaint);
 		mPaint.setColor(mTextColor);
 		canvas.drawText(mDisplayValues.get(mCurrentValue), getWidth() / 2, getHeight() / 2 + itemOffset, mPaint);
 		
+		// draw next value
 		itemOffset += mItemHeight;
+		mPaint.setColor(mFrameColor);
 		canvas.drawRect(0, itemOffset, getWidth(), getHeight() + itemOffset, mPaint);
+		mPaint.setColor(mTextColor);
 		canvas.drawText(mDisplayValues.get(mNextValue), getWidth() / 2, getHeight() / 2 + itemOffset, mPaint);
-		
 		
 /*		
 		for (int i = -1; i < 2; i ++) {

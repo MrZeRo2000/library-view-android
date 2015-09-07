@@ -19,7 +19,7 @@ public class MainActivity extends Activity {
 	        public void onClick(View v) {
 	            // Perform action on click
 	        	
-	        	final SlideNumberPicker picker = (SlideNumberPicker) findViewById(R.id.slideNumberPicker);
+	        	final SlideNumberPicker picker = (SlideNumberPicker) findViewById(R.id.slideNumberPicker1);
 	        	
 	        	Toast.makeText(getBaseContext(), "Value=" + picker.getValue(), Toast.LENGTH_SHORT).show();
 	        }

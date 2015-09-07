@@ -3,7 +3,7 @@
     xmlns:app="http://schemas.android.com/apk/res/com.romanpulov.wheelcontrol"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
-    android:background="#FFFFFF00"
+    android:background="#FF444444"
     android:paddingBottom="@dimen/activity_vertical_margin"
     android:paddingLeft="@dimen/activity_horizontal_margin"
     android:paddingRight="@dimen/activity_horizontal_margin"
@@ -24,17 +24,32 @@
         android:clickable="true"                
         />    
     <com.romanpulov.wheelcontrol.SlideNumberPicker 
-        android:id="@+id/slideNumberPicker"
+        android:id="@+id/slideNumberPicker1"
         android:layout_width="50dp"
         android:layout_height="50dp"
         android:layout_below="@+id/button1"
         app:min="5"
+        app:max="20"
+        app:textColor="#FF00FFFF"
+        app:frameColor="#FFFF0000"
+        app:textSize="8pt"
         />
+    <com.romanpulov.wheelcontrol.SlideNumberPicker 
+        android:id="@+id/slideNumberPicker2"
+        android:layout_width="50dp"
+        android:layout_height="50dp"
+        android:layout_below="@+id/slideNumberPicker1"
+        app:min="10"
+        app:max="50"
+        app:textColor="#FF00AA66"
+        app:frameColor="#FF00FF00"
+        app:textSize="8pt"
+        />    
     <TimePicker
         android:id="@+id/timePicker1"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"  
-        android:layout_below="@+id/slideNumberPicker"           
+        android:layout_below="@+id/slideNumberPicker2"           
     />    
     <NumberPicker
             android:id="@+id/hour"
