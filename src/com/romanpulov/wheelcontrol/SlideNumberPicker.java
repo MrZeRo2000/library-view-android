@@ -8,6 +8,8 @@ import android.graphics.Canvas;
 import android.graphics.Color;
 import android.graphics.Paint;
 import android.graphics.Paint.Style;
+import android.os.Parcel;
+import android.os.Parcelable;
 import android.util.AttributeSet;
 import android.util.Log;
 import android.util.SparseArray;
@@ -48,6 +50,7 @@ public class SlideNumberPicker extends View implements GestureDetector.OnGesture
 	
 	private int mCurrentScrollOffset = 0;
 	
+	// value
 	private int mCurrentValue;
 	private int mNextValue;
 	private int mNewCalcValue;
@@ -73,9 +76,7 @@ public class SlideNumberPicker extends View implements GestureDetector.OnGesture
         void onValueChange(SlideNumberPicker picker, int oldVal, int newVal);
     }
 	
-	
 	private void initDisplayValues() {
-		
 		mDisplayValues.clear();
 		
 		for (int i = mMin; i <= mMax; i ++) {
@@ -121,7 +122,6 @@ public class SlideNumberPicker extends View implements GestureDetector.OnGesture
 	
 	public SlideNumberPicker(Context context) {
 		super(context, null);
-		//initNumberPicker();
 	}
 	
 
@@ -130,8 +130,6 @@ public class SlideNumberPicker extends View implements GestureDetector.OnGesture
 		
         mPaint = new Paint();
         mPaint.setAntiAlias(true);
-        //mPaint.setTextSize(16);
-        //mPaint.setColor(0xFF000000);
         mPaint.setStyle(Style.STROKE);
 
 		TypedArray attributesArray = context.obtainStyledAttributes(attrs,
@@ -181,7 +179,6 @@ public class SlideNumberPicker extends View implements GestureDetector.OnGesture
                     
                     mCurrentAnimateScrollY = mCurrentScroller.getCurrY();                    
                     invalidate();
-                    
                 } else {
                     mScrollAnimator.cancel();
                     
@@ -189,27 +186,22 @@ public class SlideNumberPicker extends View implements GestureDetector.OnGesture
                     
                     Log.d("onFling", "cancel");
                     if (mScroller == mCurrentScroller) {
-                    	
                     	// scroll to nearest value
                     	Log.d("onFling", "mScroller cancel");
                     	finishScroll();
                     } else {
-                    	
                     	//scroll completed
                     	mCurrentScrollOffset = 0;
                     	mCurrentValue = mNextValue = mNewCalcValue;                    	
                     	setValue(mNewCalcValue);
-                    	
                     }
                 }
             }
         });	
-		
 	}
 	
     @Override
     protected void onSizeChanged(int w, int h, int oldw, int oldh) {
-    	// TODO Auto-generated method stub
     	super.onSizeChanged(w, h, oldw, oldh);
     	mItemHeight = h;
     }
@@ -261,7 +253,7 @@ public class SlideNumberPicker extends View implements GestureDetector.OnGesture
 		
 		Log.d("onDraw", "mCurrentValue=" + mCurrentValue + ", mNextValue = " + mNextValue);
 		
-		// control frame for testing purposes
+		// control frame
 		mPaint.setColor(mFrameColor);
 		canvas.drawRect(0, 0, getWidth(), getHeight(), mPaint);
 		
@@ -296,7 +288,6 @@ public class SlideNumberPicker extends View implements GestureDetector.OnGesture
 	
 	@Override
 	public boolean onTouchEvent(MotionEvent event) {
-		// TODO Auto-generated method stub
 		
 		if (this.mDetector.onTouchEvent(event))
 			return true;
@@ -319,7 +310,6 @@ public class SlideNumberPicker extends View implements GestureDetector.OnGesture
 		 }
 		
 		return true;
-		//return super.onTouchEvent(event);
 	}
 
 	@Override
@@ -367,17 +357,7 @@ public class SlideNumberPicker extends View implements GestureDetector.OnGesture
 
 	@Override
 	public boolean onScroll(MotionEvent arg0, MotionEvent arg1, float distanceX, float distanceY) {
-		//Log.d("onScroll", "onScroll");
-		
-		//scrollBy(0, (int) distanceY);
-		//mCurrentScrollOffset += distanceY;
-		
 		return false;
-	}
-
-	@Override
-	public void onShowPress(MotionEvent arg0) {
-		
 	}
 
 	@Override
@@ -412,4 +392,76 @@ public class SlideNumberPicker extends View implements GestureDetector.OnGesture
 		mCurrentScroller = mAdjustScroller;
 		mScrollAnimator.start();
 	}
+	
+    static class SavedState extends BaseSavedState {
+        int value;
+        int currentValue;
+        int nextValue;
+        
+        SavedState(Parcelable superState) {
+            super(superState);
+        }
+
+        private SavedState(Parcel in) {
+            super(in);
+            value = in.readInt();
+            currentValue = in.readInt();
+            nextValue = in.readInt();
+        }
+
+        @Override
+        public void writeToParcel(Parcel out, int flags) {
+            super.writeToParcel(out, flags);
+            out.writeInt(value);
+            out.writeInt(currentValue);
+            out.writeInt(nextValue);
+        }
+
+        @Override
+        public String toString() {
+            return "SlideNumberPicker.SavedState{"
+                    + Integer.toHexString(System.identityHashCode(this))
+                    + " value=" + value  
+                    + " currentValue=" + currentValue 
+                    + " nextValue=" + nextValue + "}";
+        }
+
+        public static final Parcelable.Creator<SavedState> CREATOR
+                = new Parcelable.Creator<SavedState>() {
+            public SavedState createFromParcel(Parcel in) {
+                return new SavedState(in);
+            }
+
+            public SavedState[] newArray(int size) {
+                return new SavedState[size];
+            }
+        };
+    }
+
+    @Override
+    public Parcelable onSaveInstanceState() {
+
+    	Parcelable superState = super.onSaveInstanceState();
+
+        SavedState ss = new SavedState(superState);
+        
+        ss.value = mValue;
+        ss.currentValue = mCurrentValue;
+        ss.nextValue = mNextValue;
+        
+        return ss;
+    }
+
+    @Override
+    public void onRestoreInstanceState(Parcelable state) {
+        SavedState ss = (SavedState) state;
+
+        super.onRestoreInstanceState(ss.getSuperState());
+        
+        mValue = ss.value;
+        mCurrentValue = ss.currentValue;
+        mNextValue = ss.nextValue;
+        
+        requestLayout();
+    }
 }
