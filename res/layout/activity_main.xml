@@ -32,7 +32,8 @@
         app:max="20"
         app:textColor="#FF00FFFF"
         app:frameColor="#FFFF0000"
-        app:textSize="8pt"
+        app:textSize="16sp"
+        app:textStyle="italic"
         />
     <com.romanpulov.wheelcontrol.SlideNumberPicker 
         android:id="@+id/slideNumberPicker2"
@@ -43,7 +44,8 @@
         app:max="50"
         app:textColor="#FF00AA66"
         app:frameColor="#FF00FF00"
-        app:textSize="8pt"
+        app:textSize="16sp"
+        app:textStyle="bold"
         />    
     <TimePicker
         android:id="@+id/timePicker1"

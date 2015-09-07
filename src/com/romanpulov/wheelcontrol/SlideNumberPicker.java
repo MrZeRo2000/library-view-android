@@ -7,6 +7,7 @@ import android.graphics.Canvas;
 import android.graphics.Color;
 import android.graphics.Paint;
 import android.graphics.Paint.Style;
+import android.graphics.Typeface;
 import android.os.Parcel;
 import android.os.Parcelable;
 import android.util.AttributeSet;
@@ -18,6 +19,7 @@ import android.view.View;
 import android.widget.Scroller;
 
 public class SlideNumberPicker extends View implements GestureDetector.OnGestureListener {
+	public static final String ANDROID_SCHEMA = "http://schemas.android.com/apk/res/android";
 	//main scroll animation duration
 	private static final int SCROLL_ANIMATION_DURATION = 3000;
 	//adjust scroll duration
@@ -137,6 +139,10 @@ public class SlideNumberPicker extends View implements GestureDetector.OnGesture
         mTextColor = attributesArray.getColor(R.styleable.SlideNumberPicker_textColor, DEFAULT_TEXTCOLOR);
         mFrameColor = attributesArray.getColor(R.styleable.SlideNumberPicker_frameColor, DEFAULT_FRAMECOLOR);
         mTextSize = attributesArray.getDimensionPixelSize(R.styleable.SlideNumberPicker_textSize, DEFAULT_TEXTSIZE);
+
+        int textStyle = attributesArray.getInt(R.styleable.SlideNumberPicker_textStyle, Typeface.NORMAL);
+        Typeface tf = Typeface.create("", textStyle);        
+        mPaint.setTypeface(tf);
         
         attributesArray.recycle();
         
@@ -266,21 +272,6 @@ public class SlideNumberPicker extends View implements GestureDetector.OnGesture
 		canvas.drawRect(0, itemOffset, getWidth(), getHeight() + itemOffset, mPaint);
 		mPaint.setColor(mTextColor);
 		canvas.drawText(mDisplayValues.get(mNextValue), getWidth() / 2, getHeight() / 2 + itemOffset, mPaint);
-		
-/*		
-		for (int i = -1; i < 2; i ++) {
-			
-			int itemOffset = mCurrentScrollOffset % itemHeight + i * itemHeight;
-			int valueOffset = 0;
-			
-			canvas.drawRect(0, itemOffset, getWidth(), getHeight() + itemOffset, mPaint);
-			canvas.drawText(mDisplayValues.get(valueOffset), getWidth() / 2, getHeight() / 2 + itemOffset, mPaint);
-			
-			Log.d("onDraw", "mTextValue=" + mTextValue + ", itemOffset = " + itemOffset);
-		}
-	*/	
-		
-		
 	}
 	
 	@Override
@@ -463,7 +454,6 @@ public class SlideNumberPicker extends View implements GestureDetector.OnGesture
 
 	@Override
 	public void onShowPress(MotionEvent e) {
-		// TODO Auto-generated method stub
-		
+		// abstract method implementation		
 	}
 }
