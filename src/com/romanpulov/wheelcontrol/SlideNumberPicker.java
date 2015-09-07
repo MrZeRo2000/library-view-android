@@ -2,7 +2,6 @@ package com.romanpulov.wheelcontrol;
 
 import android.animation.ValueAnimator;
 import android.content.Context;
-import android.content.res.ColorStateList;
 import android.content.res.TypedArray;
 import android.graphics.Canvas;
 import android.graphics.Color;
@@ -23,8 +22,6 @@ public class SlideNumberPicker extends View implements GestureDetector.OnGesture
 	private static final int SCROLL_ANIMATION_DURATION = 3000;
 	//adjust scroll duration
 	private final static int ADJUST_SCROLL_DURATION = 500;	
-	//fling gesture velocity correction factor
-	private final static int FLING_VELOCITY_SCALE_FACTOR = 4;
 	
 	private static final int DEFAULT_TEXTCOLOR = Color.BLUE;
 	private static final int DEFAULT_FRAMECOLOR = Color.BLACK;
@@ -440,7 +437,6 @@ public class SlideNumberPicker extends View implements GestureDetector.OnGesture
 
     @Override
     public Parcelable onSaveInstanceState() {
-
     	Parcelable superState = super.onSaveInstanceState();
 
         SavedState ss = new SavedState(superState);
@@ -464,4 +460,10 @@ public class SlideNumberPicker extends View implements GestureDetector.OnGesture
         
         requestLayout();
     }
+
+	@Override
+	public void onShowPress(MotionEvent e) {
+		// TODO Auto-generated method stub
+		
+	}
 }
