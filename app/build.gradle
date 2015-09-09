@@ -1,13 +1,13 @@
 apply plugin: 'com.android.application'
 
 android {
-    compileSdkVersion 17
+    compileSdkVersion 23
     buildToolsVersion "23.0.0"
 
     defaultConfig {
         applicationId "com.romanpulov.wheelcontrol"
         minSdkVersion 11
-        targetSdkVersion 18
+        targetSdkVersion 23
     }
 
     buildTypes {
@@ -16,15 +16,21 @@ android {
             proguardFiles getDefaultProguardFile('proguard-android.txt'), 'proguard-rules.txt'
         }
     }
+
+    lintOptions {
+        abortOnError false
+    }
+
 }
+
 
 repositories {
     mavenCentral()
 }
 
 dependencies {
-    /*compile project(':library')*/
+    compile project(':library')
     /*compile 'com.android.support:support-v4:18.0.0'*/
     /*compile 'com.github.chrisbanes.actionbarpulltorefresh:extra-abc:+'*/
-    compile project(':library')
+    //compile 'com.romanpulov.library:+'
 }

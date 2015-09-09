@@ -19,7 +19,7 @@ import android.view.View;
 import android.widget.Scroller;
 
 public class SlideNumberPicker extends View implements GestureDetector.OnGestureListener {
-	public static final String ANDROID_SCHEMA = "http://schemas.android.com/apk/res/android";
+
 	//main scroll animation duration
 	private static final int SCROLL_ANIMATION_DURATION = 3000;
 	//adjust scroll duration
