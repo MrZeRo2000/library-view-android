@@ -5,7 +5,8 @@ import android.app.Activity;
 import android.view.Menu;
 import android.widget.Button;
 import android.widget.Toast;
-import android.view.View;;
+import android.view.View;
+import com.romanpulov.library.views.SlideNumberPicker;
 
 public class MainActivity extends Activity {
 
@@ -18,15 +19,15 @@ public class MainActivity extends Activity {
 	    button.setOnClickListener(new View.OnClickListener() {
 	        public void onClick(View v) {
 	            // Perform action on click
-	        	
+
 	        	final SlideNumberPicker picker = (SlideNumberPicker) findViewById(R.id.slideNumberPicker1);
 	        	
 	        	Toast.makeText(getBaseContext(), "Value=" + picker.getValue(), Toast.LENGTH_SHORT).show();
+
 	        }
 	    });
 		
 	};
-	
 
 	@Override
 	public boolean onCreateOptionsMenu(Menu menu) {

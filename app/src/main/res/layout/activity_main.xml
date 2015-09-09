@@ -23,7 +23,7 @@
 		android:layout_below="@+id/textView"
         android:clickable="true"                
         />    
-    <com.romanpulov.wheelcontrol.SlideNumberPicker 
+    <com.romanpulov.library.views.SlideNumberPicker
         android:id="@+id/slideNumberPicker1"
         android:layout_width="50dp"
         android:layout_height="50dp"
@@ -35,7 +35,7 @@
         app:textSize="16sp"
         app:textStyle="italic"
         />
-    <com.romanpulov.wheelcontrol.SlideNumberPicker 
+    <com.romanpulov.library.views.SlideNumberPicker
         android:id="@+id/slideNumberPicker2"
         android:layout_width="50dp"
         android:layout_height="50dp"
@@ -61,5 +61,7 @@
             android:focusableInTouchMode="true"
             android:layout_below="@+id/timePicker1"               
             />
+
+
 
 </RelativeLayout>

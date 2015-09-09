@@ -1,4 +1,4 @@
-package com.romanpulov.wheelcontrol;
+package com.romanpulov.library.views;
 
 import android.animation.ValueAnimator;
 import android.content.Context;
