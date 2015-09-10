@@ -28,12 +28,6 @@
         android:layout_width="50dp"
         android:layout_height="50dp"
         android:layout_below="@+id/button1"
-        app:min="5"
-        app:max="20"
-        app:textColor="#FF00FFFF"
-        app:frameColor="#FFFF0000"
-        app:textSize="16sp"
-        app:textStyle="italic"
         />
     <com.romanpulov.library.views.SlideNumberPicker
         android:id="@+id/slideNumberPicker2"
@@ -46,7 +40,7 @@
         app:frameColor="#FF00FF00"
         app:textSize="16sp"
         app:textStyle="bold"
-        />    
+        />
     <TimePicker
         android:id="@+id/timePicker1"
         android:layout_width="wrap_content"

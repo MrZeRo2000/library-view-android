@@ -33,6 +33,6 @@ repositories {
 }
 
 dependencies {
-    compile 'com.romanpulov.library:library:1.0.1'
+    compile 'com.romanpulov.library:library:1.0.2'
     //compile project(':library')
 }
