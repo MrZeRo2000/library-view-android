@@ -26,11 +26,13 @@ android {
 
 repositories {
     mavenCentral()
+    maven {
+        url 'https://dl.bintray.com/mrzero2000/maven'
+    }
+
 }
 
 dependencies {
-    compile project(':library')
-    /*compile 'com.android.support:support-v4:18.0.0'*/
-    /*compile 'com.github.chrisbanes.actionbarpulltorefresh:extra-abc:+'*/
-    //compile 'com.romanpulov.library:+'
+    compile 'com.romanpulov.library:library:1.0.1'
+    //compile project(':library')
 }

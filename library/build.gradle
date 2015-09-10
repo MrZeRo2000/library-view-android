@@ -21,3 +21,35 @@ android {
 dependencies {
     compile fileTree(dir: 'libs', include: ['*.jar'])
 }
+
+ext {
+    // Where you will see your artifact in Bintray's web interface
+    // The "bintrayName" should match the name of the Bintray repro.
+    bintrayRepo = 'maven'
+    bintrayName = 'romanpulov-library'
+
+    // Maven metadata
+    publishedGroupId = 'com.romanpulov.library'
+    libraryName = 'library'
+    // Save yourself a head ache, and set this equal to the name of the Android Studio library
+    // module. The artifact name needs to match the name of the library.
+    artifact = 'library'
+
+    libraryDescription = 'Roman Pulov library for Android'
+    libraryVersion = '1.0.1'
+
+    developerId = 'romanpulov'
+    developerName = 'Roman Pulov'
+    developerEmail = 'roman.pulov@at.com'
+
+    siteUrl = 'https://github.com/MrZeRo2000/wheelcontroltest-android'
+    gitUrl = 'https://github.com/MrZeRo2000/wheelcontroltest-android.git'
+
+    licenseName = 'Apache License, Version 2.0'
+    licenseUrl = 'http://www.apache.org/licenses/LICENSE-2.0.txt'
+
+    allLicenses = ["Apache-2.0"]
+}
+
+apply from: 'https://raw.githubusercontent.com/MrZeRo2000/JCenter/master/installv1.gradle'
+apply from: 'https://raw.githubusercontent.com/MrZeRo2000/JCenter/master/bintrayv1.gradle'
