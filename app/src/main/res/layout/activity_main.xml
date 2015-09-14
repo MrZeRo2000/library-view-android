@@ -23,13 +23,13 @@
 		android:layout_below="@+id/textView"
         android:clickable="true"                
         />    
-    <com.romanpulov.library.views.SlideNumberPicker
+    <com.romanpulov.library.view.SlideNumberPicker
         android:id="@+id/slideNumberPicker1"
         android:layout_width="50dp"
         android:layout_height="50dp"
         android:layout_below="@+id/button1"
         />
-    <com.romanpulov.library.views.SlideNumberPicker
+    <com.romanpulov.library.view.SlideNumberPicker
         android:id="@+id/slideNumberPicker2"
         android:layout_width="50dp"
         android:layout_height="50dp"
@@ -47,15 +47,20 @@
         android:layout_height="wrap_content"  
         android:layout_below="@+id/slideNumberPicker2"           
     />    
-    <NumberPicker
-            android:id="@+id/hour"
-            android:layout_width="70dip"
-            android:layout_height="wrap_content"
-            android:focusable="true"
-            android:focusableInTouchMode="true"
-            android:layout_below="@+id/timePicker1"               
-            />
+    <com.romanpulov.library.view.ProgressCircle
+        android:id="@+id/progressCircle1"
+        android:layout_width="50dp"
+        android:layout_height="50dp"
+        android:layout_below="@+id/timePicker1"
+        />
 
+    <SeekBar
+        android:id="@+id/seekBar1"
+        android:layout_width="100pt"
+        android:layout_height="wrap_content"
+        android:layout_below="@+id/progressCircle1"
+        android:max="100"
+        />
 
 
 </RelativeLayout>

@@ -1,4 +1,4 @@
-package com.romanpulov.library.views;
+package com.romanpulov.library.view;
 
 import android.animation.ValueAnimator;
 import android.content.Context;
@@ -17,6 +17,8 @@ import android.view.GestureDetector;
 import android.view.MotionEvent;
 import android.view.View;
 import android.widget.Scroller;
+
+import com.romanpulov.library.view.R;
 
 public class SlideNumberPicker extends View implements GestureDetector.OnGestureListener {
 
@@ -126,7 +128,8 @@ public class SlideNumberPicker extends View implements GestureDetector.OnGesture
 
 	public SlideNumberPicker(Context context, AttributeSet attrs) {
 		super(context, attrs);
-		
+
+		// prepare paint
         mPaint = new Paint();
         mPaint.setAntiAlias(true);
         mPaint.setStyle(Style.STROKE);

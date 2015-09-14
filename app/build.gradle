@@ -23,12 +23,11 @@ android {
 
 }
 
-
 repositories {
     mavenCentral()
 }
 
 dependencies {
-    compile 'com.romanpulov.library:library:1.0.2'
-    //compile project(':library')
+    //compile 'com.romanpulov.library:library:1.0.2'
+    compile project(':library')
 }

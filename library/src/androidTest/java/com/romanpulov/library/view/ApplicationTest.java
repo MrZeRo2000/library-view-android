@@ -1,4 +1,4 @@
-package com.romanpulov.library.views;
+package com.romanpulov.library.view;
 
 import android.app.Application;
 import android.test.ApplicationTestCase;
