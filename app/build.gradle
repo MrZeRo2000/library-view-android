@@ -26,10 +26,6 @@ android {
 
 repositories {
     mavenCentral()
-    maven {
-        url 'https://dl.bintray.com/mrzero2000/maven'
-    }
-
 }
 
 dependencies {
