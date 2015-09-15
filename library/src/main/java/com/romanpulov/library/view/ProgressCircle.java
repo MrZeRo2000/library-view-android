@@ -10,22 +10,28 @@ import android.graphics.Paint;
 import android.graphics.Paint.Align;
 import android.graphics.Rect;
 import android.graphics.RectF;
+import android.graphics.Typeface;
 import android.util.AttributeSet;
 import android.view.View;
 
-import com.romanpulov.library.view.R;
-
 public class ProgressCircle extends View {
 
-	private static final int ARC_MARGIN = 5;
-	private static final int ARC_THICKNESS = 5;
+    //progress style definition
+    public static final int PROGRESS_STYLE_PERCENT = 0;
+    public static final int PROGRESS_STYLE_VALUE = 1;
+
+    //defaults
+	private static final int DEFAULT_ARC_MARGIN = 5;
+	private static final int DEFAULT_ARC_THICKNESS = 5;
 	public static final int DEFAULT_MIN = 0;
 	public static final int DEFAULT_MAX = 100;
 	public static final int DEFAULT_PROGRESS = 50;
-	public static final boolean DEFAULT_AUTOHIDE = false;
+	public static final boolean DEFAULT_AUTO_HIDE = false;
 	public static final int DEFAULT_PROGRESS_COLOR = Color.RED;
 	public static final int DEFAULT_PROGRESS_REST_COLOR = Color.WHITE;
-	public static final int DEFAULT_TEXTSIZE = 12;
+	public static final int DEFAULT_TEXT_SIZE = 12;
+	public static final int DEFAULT_TEXT_COLOR = Color.WHITE;
+    public static final int DEFAULT_PROGRESS_STYLE = PROGRESS_STYLE_PERCENT;
 
 	private int mMin;
 	private int mMax;
@@ -33,6 +39,10 @@ public class ProgressCircle extends View {
 	private boolean mAutoHide;
 	private int mProgressColor;
 	private int mProgressRestColor;
+	private int mTextSize;
+    private int mArcMargin;
+    private int mArcThickness;
+    private int mProgressStyle;
 	
 	private String mDisplayProgress;
 	
@@ -53,30 +63,15 @@ public class ProgressCircle extends View {
 	public ProgressCircle(Context context, AttributeSet attrs) {
 		super(context, attrs);
 
-        //defaults
-        mMin = DEFAULT_MIN;
-        mMax = DEFAULT_MAX;
-        mProgress = DEFAULT_PROGRESS;
-        mPrevProgress = mProgress;
-        mAutoHide = DEFAULT_AUTOHIDE;
-        mProgressColor = DEFAULT_PROGRESS_COLOR;
-        mProgressRestColor = DEFAULT_PROGRESS_REST_COLOR;
-        mDisplayProgress = getDisplayProgress();
-
         //text paint
         mTextPaint = new Paint();
         mTextPaint.setAntiAlias(true);
-        mTextPaint.setTextSize(DEFAULT_TEXTSIZE * getResources().getDisplayMetrics().density);
-        mTextPaint.setColor(Color.WHITE);
         mTextPaint.setStyle(Paint.Style.STROKE);
         mTextPaint.setTextAlign(Align.LEFT);
-        mTextBounds = new Rect();
-        mTextPaint.getTextBounds("000", 0, 3, mTextBounds);
 
         //arc paint
         mArcPaint = new Paint();
         mArcPaint.setAntiAlias(true);
-        mArcPaint.setStrokeWidth(ARC_THICKNESS);
         mArcPaint.setStyle(Paint.Style.STROKE);
 
         //arc rect
@@ -85,29 +80,46 @@ public class ProgressCircle extends View {
 		//read resources
         TypedArray a = context.obtainStyledAttributes(attrs, R.styleable.ProgressCircle);
         
-        int min =  a.getInteger(R.styleable.ProgressCircle_min, mMin);        
-        int max = a.getInteger(R.styleable.ProgressCircle_max, mMax);
-        int progress = a.getInteger(R.styleable.ProgressCircle_progress, mProgress);
-        boolean autohide = a.getBoolean(R.styleable.ProgressCircle_autohide, mAutoHide);
-        
-        if ((max >= min) && (progress >= min) && (progress <= max)) {
-        	mMin = min;
-        	mMax = max;
-        	mProgress = progress;
-        	mAutoHide = autohide;
-        	mPrevProgress = mProgress;
-        }
-        
-        setTextColor(a.getColor(R.styleable.ProgressCircle_textColor, Color.WHITE));
-        
-        mProgressColor = a.getColor(R.styleable.ProgressCircle_progressColor, mProgressColor);
-        mProgressRestColor = a.getColor(R.styleable.ProgressCircle_progressRestColor, mProgressRestColor);
+        int min =  a.getInteger(R.styleable.ProgressCircle_min, DEFAULT_MIN);
+        int max = a.getInteger(R.styleable.ProgressCircle_max, DEFAULT_MAX);
+        int progress = a.getInteger(R.styleable.ProgressCircle_progress, DEFAULT_PROGRESS);
 
-        int textSize = a.getDimensionPixelOffset(R.styleable.ProgressCircle_textSize, 0);
-        if (textSize > 0) {
-            setTextSize(textSize);
-        }
-        
+		// if input data is wrong revert to defaults
+        if ((max < min) || (progress < min) || (progress > max)) {
+        	mMin = DEFAULT_MIN;
+        	mMax = DEFAULT_MAX;
+        	mProgress = DEFAULT_PROGRESS;
+        } else {
+			mMin = min;
+			mMax = max;
+			mProgress = progress;
+		}
+		mPrevProgress = mProgress;
+        mDisplayProgress = getDisplayProgress();
+
+		mAutoHide = a.getBoolean(R.styleable.ProgressCircle_autoHide, DEFAULT_AUTO_HIDE);
+
+        //colors
+        mTextPaint.setColor(a.getColor(R.styleable.ProgressCircle_textColor, DEFAULT_TEXT_COLOR));
+        mProgressColor = a.getColor(R.styleable.ProgressCircle_progressColor, DEFAULT_PROGRESS_COLOR);
+        mProgressRestColor = a.getColor(R.styleable.ProgressCircle_progressRestColor, DEFAULT_PROGRESS_REST_COLOR);
+
+        //text size and style
+        mTextSize = a.getDimensionPixelOffset(R.styleable.ProgressCircle_textSize, (int) (DEFAULT_TEXT_SIZE * getResources().getDisplayMetrics().density));
+        mTextPaint.setTextSize(mTextSize);
+        int textStyle = a.getInt(R.styleable.ProgressCircle_textStyle, Typeface.NORMAL);
+        Typeface tf = Typeface.create("", textStyle);
+        mTextPaint.setTypeface(tf);
+
+        updateTextBounds();
+
+        //arc
+        mArcMargin = a.getDimensionPixelOffset(R.styleable.ProgressCircle_arcMargin, (int) (DEFAULT_ARC_MARGIN * getResources().getDisplayMetrics().density));
+        mArcThickness = a.getDimensionPixelOffset(R.styleable.ProgressCircle_arcThickness, (int) (DEFAULT_ARC_THICKNESS * getResources().getDisplayMetrics().density));
+        mArcPaint.setStrokeWidth(mArcThickness);
+
+        mProgressStyle = a.getInt(R.styleable.ProgressCircle_progressStyle, DEFAULT_PROGRESS_STYLE);
+
         a.recycle();
 	
 	}
@@ -119,7 +131,7 @@ public class ProgressCircle extends View {
 		} else if (mMin == mProgress) {
 			return "";
 		} else	{
-			return String.format(Locale.getDefault(), "%02d%%", mProgress * 100 / (mMax - mMin));
+			return String.format(Locale.getDefault(), "%02d%%", (mProgress - mMin) * 100 / (mMax - mMin));
 		} 
 	}
 	
@@ -142,7 +154,6 @@ public class ProgressCircle extends View {
 			} else {
 				invalidate();
 			}
-			invalidate();
 		}
 	}
 	
@@ -170,17 +181,23 @@ public class ProgressCircle extends View {
 	}
 	
     public void setTextSize(int size) {
-        // This text size has been pre-scaled by the getDimensionPixelOffset method
         mTextPaint.setTextSize(size);
         //would be required if control size gets dependent from test font 
         //requestLayout();
+        updateTextBounds();
         invalidate();
     }	
     
     public void setTextColor(int color) {
         mTextPaint.setColor(color);
         invalidate();
-    }    
+    }
+
+    private void updateTextBounds() {
+        //calc text bounds
+        mTextBounds = new Rect();
+        mTextPaint.getTextBounds("000", 0, 3, mTextBounds);
+    }
 	
 	@Override
 	protected void onDraw(Canvas canvas) {
@@ -195,9 +212,9 @@ public class ProgressCircle extends View {
 		//canvas.drawRect(0, 0, width, height, mTextPaint);
 
 		if (width > height) {
-			mArcRect.set((width - height) / 2 + ARC_MARGIN , ARC_MARGIN, (width - height) / 2 + height - ARC_MARGIN, height - ARC_MARGIN);
+			mArcRect.set((width - height) / 2 + mArcMargin, mArcMargin, (width - height) / 2 + height - mArcMargin, height - mArcMargin);
 		} else {
-			mArcRect.set(ARC_MARGIN, (height - width ) / 2 + ARC_MARGIN , width - ARC_MARGIN, (height - width) / 2 + width - ARC_MARGIN);
+			mArcRect.set(mArcMargin, (height - width ) / 2 + mArcMargin, width - mArcMargin, (height - width) / 2 + width - mArcMargin);
 		}
 		
 		if (mMax > mMin) {

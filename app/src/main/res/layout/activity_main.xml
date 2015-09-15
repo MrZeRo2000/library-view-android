@@ -52,6 +52,16 @@
         android:layout_width="50dp"
         android:layout_height="50dp"
         android:layout_below="@+id/timePicker1"
+        app:textColor="#FFFFFF00"
+        app:textSize="5pt"
+        app:textStyle="bold|italic"
+        app:progressColor="#FF00FF00"
+        app:progressRestColor="#FF6677AA"
+        app:arcMargin="7dp"
+        app:arcThickness="3dp"
+        app:progressStyle="percent"
+        app:min="10"
+        app:max="85"
         />
 
     <SeekBar

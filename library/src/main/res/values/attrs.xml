@@ -14,7 +14,11 @@
         <flag name="light" value="32" />
         <flag name="medium" value="64" />
         <flag name="thin" value="128" />
-    </attr>    
+    </attr>
+    <attr name="progressStyle">
+        <flag name="percent" value="0" />
+        <flag name="value" value="1" />
+    </attr>
     <declare-styleable name="SlideNumberPicker">
         <attr name = "min" />
         <attr name = "max" />
@@ -27,11 +31,14 @@
 	    <attr name = "min" />
 	    <attr name = "max" />
 	    <attr name = "progress" format = "integer" />
-	    <attr name = "autohide" format = "boolean" />
+	    <attr name = "autoHide" format = "boolean" />
         <attr name="textColor"  />
         <attr name="textSize" />
         <attr name="textStyle" />
         <attr name="progressColor" format="color" />	    	    
         <attr name="progressRestColor" format="color" />
+        <attr name="arcMargin" format="dimension" />
+        <attr name="arcThickness" format="dimension" />
+        <attr name="progressStyle" />
 	</declare-styleable>    
 </resources>
