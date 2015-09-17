@@ -17,8 +17,6 @@ import android.view.MotionEvent;
 import android.view.View;
 import android.widget.Scroller;
 
-import com.romanpulov.library.view.R;
-
 public class SlideNumberPicker extends View implements GestureDetector.OnGestureListener {
 
 	//main scroll animation duration
@@ -42,8 +40,7 @@ public class SlideNumberPicker extends View implements GestureDetector.OnGesture
 	private int mFrameColor;
 	
 	//text appearance
-	private int mTextSize;
-	private int mTextColor; 
+	private int mTextColor;
 	
 	// calculated based on mMax and mMin
 	private int mRange;
@@ -59,7 +56,7 @@ public class SlideNumberPicker extends View implements GestureDetector.OnGesture
 	private int mCurrentAnimateScrollY = 0;
 	private int mItemHeight = 0;
 	
-	private SparseArray<String> mDisplayValues = new SparseArray<String>();  
+	private SparseArray<String> mDisplayValues = new SparseArray<>();
 	
 	private Paint mPaint;
 	
@@ -87,14 +84,15 @@ public class SlideNumberPicker extends View implements GestureDetector.OnGesture
 	private void updateRange() {
 		mRange = mMax - mMin + 1;
 	}
-	
+
+	@SuppressWarnings("unused") // it's actually used
     public void setOnValueChangedListener(OnValueChangeListener onValueChangedListener) {
         mOnValueChangeListener = onValueChangedListener;
     }	
     
     private void notifyChange(int previous, int current) {
         if (mOnValueChangeListener != null) {
-            mOnValueChangeListener.onValueChange(this, previous, mValue);
+            mOnValueChangeListener.onValueChange(this, previous, current);
         }
     }
     
@@ -123,7 +121,6 @@ public class SlideNumberPicker extends View implements GestureDetector.OnGesture
 	public SlideNumberPicker(Context context) {
 		super(context, null);
 	}
-	
 
 	public SlideNumberPicker(Context context, AttributeSet attrs) {
 		super(context, attrs);
@@ -140,7 +137,7 @@ public class SlideNumberPicker extends View implements GestureDetector.OnGesture
         mMax = attributesArray.getInt(R.styleable.SlideNumberPicker_max, DEFAULT_MAX);    
         mTextColor = attributesArray.getColor(R.styleable.SlideNumberPicker_textColor, DEFAULT_TEXTCOLOR);
         mFrameColor = attributesArray.getColor(R.styleable.SlideNumberPicker_frameColor, DEFAULT_FRAMECOLOR);
-        mTextSize = attributesArray.getDimensionPixelSize(R.styleable.SlideNumberPicker_textSize, DEFAULT_TEXTSIZE);
+        int textSize = attributesArray.getDimensionPixelSize(R.styleable.SlideNumberPicker_textSize, DEFAULT_TEXTSIZE);
 
         int textStyle = attributesArray.getInt(R.styleable.SlideNumberPicker_textStyle, Typeface.NORMAL);
         Typeface tf = Typeface.create("", textStyle);        
@@ -156,7 +153,7 @@ public class SlideNumberPicker extends View implements GestureDetector.OnGesture
         
         setValue(mMin);
         mCurrentValue = mNextValue = mValue;
-        mPaint.setTextSize(mTextSize);
+        mPaint.setTextSize(textSize);
         
         mDetector = new GestureDetector(getContext(), this);
         mScroller = new Scroller(getContext(), null, true);
@@ -197,9 +194,9 @@ public class SlideNumberPicker extends View implements GestureDetector.OnGesture
 	}
 	
     @Override
-    protected void onSizeChanged(int w, int h, int oldw, int oldh) {
-    	super.onSizeChanged(w, h, oldw, oldh);
-    	mItemHeight = h;
+    protected void onSizeChanged(int width, int height, int oldWidth, int oldHeight) {
+    	super.onSizeChanged(width, height, oldWidth, oldHeight);
+    	mItemHeight = height;
     }
     
 	@Override
@@ -209,7 +206,7 @@ public class SlideNumberPicker extends View implements GestureDetector.OnGesture
 	}
 	
 	private int measureWidth(int measureSpec) {
-		int result = 0;
+		int result;
         int specMode = MeasureSpec.getMode(measureSpec);
         int specSize = MeasureSpec.getSize(measureSpec);
         
@@ -226,7 +223,7 @@ public class SlideNumberPicker extends View implements GestureDetector.OnGesture
 	}
 	
 	private int measureHeight(int measureSpec) {
-		int result = 0;
+		int result;
         int specMode = MeasureSpec.getMode(measureSpec);
         int specSize = MeasureSpec.getSize(measureSpec);
         
@@ -269,7 +266,6 @@ public class SlideNumberPicker extends View implements GestureDetector.OnGesture
 	
 	@Override
 	public boolean onTouchEvent(MotionEvent event) {
-		
 		if (this.mDetector.onTouchEvent(event))
 			return true;
 		
@@ -302,29 +298,30 @@ public class SlideNumberPicker extends View implements GestureDetector.OnGesture
 
 	@Override
 	public boolean onFling(MotionEvent e1, MotionEvent e2, float velocityX, float velocityY) {
-		fling((int) velocityX, (int) velocityY);
+		fling((int) velocityY);
         return true;
 	}
 
 	@Override
 	public void onLongPress(MotionEvent arg0) {
-		// TODO Auto-generated method stub
-		
+		// abstract method implementation
 	}
 	
 	@Override
 	public void scrollBy(int x, int y) {
-		
 		mCurrentScrollOffset += y;
-		int currentValueOffset = (-mCurrentScrollOffset / mItemHeight) % mRange;
-	
-		// added mRange to ensure values are > 0
-		if (mCurrentScrollOffset <= 0) {
-			mCurrentValue = mMin + (mValue - mMin + currentValueOffset + mRange) % mRange;
-			mNextValue = mMin + (mValue - mMin + 1 + currentValueOffset + mRange) % mRange;
-		} else {
-			mCurrentValue = mMin + (mValue - mMin - 1 + currentValueOffset + mRange) % mRange;
-			mNextValue = mMin + (mValue - mMin + currentValueOffset + mRange) % mRange;
+
+		if (mRange > 0 ) {
+			int currentValueOffset = (-mCurrentScrollOffset / mItemHeight) % mRange;
+
+			// added mRange to ensure values are > 0
+			if (mCurrentScrollOffset <= 0) {
+				mCurrentValue = mMin + (mValue - mMin + currentValueOffset + mRange) % mRange;
+				mNextValue = mMin + (mValue - mMin + 1 + currentValueOffset + mRange) % mRange;
+			} else {
+				mCurrentValue = mMin + (mValue - mMin - 1 + currentValueOffset + mRange) % mRange;
+				mNextValue = mMin + (mValue - mMin + currentValueOffset + mRange) % mRange;
+			}
 		}
 	}
 
@@ -338,7 +335,7 @@ public class SlideNumberPicker extends View implements GestureDetector.OnGesture
 		return false;
 	}
 	
-	private void fling(int velocityX, int velocityY) {		
+	private void fling(int velocityY) {
         if (velocityY > 0) {
             mScroller.fling(0, 0, 0, velocityY, 0, 0, 0, Integer.MAX_VALUE);
         } else {

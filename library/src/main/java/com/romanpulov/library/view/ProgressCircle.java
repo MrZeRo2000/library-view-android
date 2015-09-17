@@ -316,10 +316,10 @@ public class ProgressCircle extends View {
         final int width = getMeasuredWidth();
         final int height = getMeasuredHeight();
         final int widthWithoutPadding = width - getPaddingLeft() - getPaddingRight();
-        final int heigthWithoutPadding = height - getPaddingTop() - getPaddingBottom();
+        final int heightWithoutPadding = height - getPaddingTop() - getPaddingBottom();
         
         //this is the main metric to be calculated
-		int size = 0;
+		int size;
 
 		/*
 		  as there is no internal restriction to the control size, 
@@ -327,10 +327,10 @@ public class ProgressCircle extends View {
 		*/ 
         if ((MeasureSpec.EXACTLY ==  heightSpecMode) || (MeasureSpec.EXACTLY == widthSpecMode)) {
         	
-        	if ((0 == widthWithoutPadding) || (0 == heigthWithoutPadding)) {
-        		size = Math.max(widthWithoutPadding, heigthWithoutPadding);
+        	if ((0 == widthWithoutPadding) || (0 == heightWithoutPadding)) {
+        		size = Math.max(widthWithoutPadding, heightWithoutPadding);
         	} else {
-        		size = Math.min(widthWithoutPadding, heigthWithoutPadding);
+        		size = Math.min(widthWithoutPadding, heightWithoutPadding);
         	}
         	
         	if (size > 0 ) {
@@ -354,7 +354,6 @@ public class ProgressCircle extends View {
 	        }
         }
         
-        //Log.d("ProgressCircle", "widthMeasureSpec=" + widthMeasureSpec + ", heightMeasureSpec=" + heightMeasureSpec + ", width=" + widthWithoutPadding + ", height=" + heigthWithoutPadding + ", size=" + size);
-        setMeasuredDimension(size + getPaddingLeft() + getPaddingRight(), size + getPaddingTop() + getPaddingBottom());		
+        setMeasuredDimension(size + getPaddingLeft() + getPaddingRight(), size + getPaddingTop() + getPaddingBottom());
 	}
 }
