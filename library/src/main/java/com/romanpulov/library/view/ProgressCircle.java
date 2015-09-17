@@ -20,11 +20,11 @@ public class ProgressCircle extends View {
     public static final int PROGRESS_STYLE_PERCENT = 0;
     public static final int PROGRESS_STYLE_VALUE = 1;
 
-    //defaults
+	//defaults
 	private static final int DEFAULT_ARC_MARGIN = 5;
 	private static final int DEFAULT_ARC_THICKNESS = 5;
 	public static final int DEFAULT_MIN = 0;
-	public static final int DEFAULT_MAX = 100;
+    public static final int DEFAULT_MAX = 100;
 	public static final int DEFAULT_PROGRESS = 50;
 	public static final boolean DEFAULT_AUTO_HIDE = false;
 	public static final int DEFAULT_PROGRESS_COLOR = Color.RED;
@@ -32,19 +32,30 @@ public class ProgressCircle extends View {
 	public static final int DEFAULT_TEXT_SIZE = 12;
 	public static final int DEFAULT_TEXT_COLOR = Color.WHITE;
     public static final int DEFAULT_PROGRESS_STYLE = PROGRESS_STYLE_PERCENT;
+    public static final int MAX_PERCENT_VALUE = 100;
+    public static final String[] DISPLAY_FORMAT_LIST = {
+            "%%0%dd%%%%",
+            "%%0%dd",
+    };
+	public static final int PERCENT_VALUE_DIGITS = 2;
 
+	// values / state
 	private int mMin;
 	private int mMax;
 	private int mProgress;
+
+	// appearance
 	private boolean mAutoHide;
 	private int mProgressColor;
 	private int mProgressRestColor;
-	private int mTextSize;
     private int mArcMargin;
-    private int mArcThickness;
     private int mProgressStyle;
 	
-	private String mDisplayProgress;
+	private String mDisplayProgressText;
+    private String mMaxDisplayValueText;
+    private String mMinDisplayValueText;
+    private String mDisplayValueFormat;
+    private int mMaxValueDigits;
 	
 	private int mPrevProgress;
 	private Paint mTextPaint;
@@ -95,7 +106,6 @@ public class ProgressCircle extends View {
 			mProgress = progress;
 		}
 		mPrevProgress = mProgress;
-        mDisplayProgress = getDisplayProgress();
 
 		mAutoHide = a.getBoolean(R.styleable.ProgressCircle_autoHide, DEFAULT_AUTO_HIDE);
 
@@ -105,33 +115,55 @@ public class ProgressCircle extends View {
         mProgressRestColor = a.getColor(R.styleable.ProgressCircle_progressRestColor, DEFAULT_PROGRESS_REST_COLOR);
 
         //text size and style
-        mTextSize = a.getDimensionPixelOffset(R.styleable.ProgressCircle_textSize, (int) (DEFAULT_TEXT_SIZE * getResources().getDisplayMetrics().density));
-        mTextPaint.setTextSize(mTextSize);
+        int textSize = a.getDimensionPixelOffset(R.styleable.ProgressCircle_textSize, (int) (DEFAULT_TEXT_SIZE * getResources().getDisplayMetrics().density));
+        mTextPaint.setTextSize(textSize);
         int textStyle = a.getInt(R.styleable.ProgressCircle_textStyle, Typeface.NORMAL);
         Typeface tf = Typeface.create("", textStyle);
         mTextPaint.setTypeface(tf);
 
-        updateTextBounds();
-
         //arc
         mArcMargin = a.getDimensionPixelOffset(R.styleable.ProgressCircle_arcMargin, (int) (DEFAULT_ARC_MARGIN * getResources().getDisplayMetrics().density));
-        mArcThickness = a.getDimensionPixelOffset(R.styleable.ProgressCircle_arcThickness, (int) (DEFAULT_ARC_THICKNESS * getResources().getDisplayMetrics().density));
-        mArcPaint.setStrokeWidth(mArcThickness);
+        int arcThickness = a.getDimensionPixelOffset(R.styleable.ProgressCircle_arcThickness, (int) (DEFAULT_ARC_THICKNESS * getResources().getDisplayMetrics().density));
+        mArcPaint.setStrokeWidth(arcThickness);
 
         mProgressStyle = a.getInt(R.styleable.ProgressCircle_progressStyle, DEFAULT_PROGRESS_STYLE);
 
         a.recycle();
-	
+
+        updateDisplayValues();
+        updateTextBounds();
+        mDisplayProgressText = getDisplayProgress();
 	}
+
+    private void updateDisplayValues() {
+        int maxDisplayValue = 0;
+		mMaxValueDigits = 1;
+
+        switch (mProgressStyle) {
+            case PROGRESS_STYLE_PERCENT:
+                maxDisplayValue = mMax > MAX_PERCENT_VALUE ? MAX_PERCENT_VALUE : mMax;
+				mMaxValueDigits = PERCENT_VALUE_DIGITS;
+                break;
+            case PROGRESS_STYLE_VALUE:
+                maxDisplayValue = mMax;
+				if (maxDisplayValue > 0 )
+					mMaxValueDigits = (int)Math.floor(Math.log10((double)maxDisplayValue)) + 1;
+                break;
+        }
+
+        mMaxDisplayValueText =  String.valueOf(maxDisplayValue);
+        mMinDisplayValueText = "";
+        mDisplayValueFormat = String.format(Locale.getDefault(), DISPLAY_FORMAT_LIST[mProgressStyle], mMaxValueDigits);
+    }
 	
 	private String getDisplayProgress() {
-		
-		if (mMax == mProgress) {
-			return "100";
+		if ((mProgress >= mMax) && (mProgressStyle == PROGRESS_STYLE_PERCENT) && (mMax == MAX_PERCENT_VALUE)) {
+			// for 100% outputting unformatted
+			return mMaxDisplayValueText;
 		} else if (mMin == mProgress) {
-			return "";
+			return mMinDisplayValueText;
 		} else	{
-			return String.format(Locale.getDefault(), "%02d%%", (mProgress - mMin) * 100 / (mMax - mMin));
+			return String.format(Locale.getDefault(), mDisplayValueFormat, mProgress);
 		} 
 	}
 	
@@ -147,8 +179,10 @@ public class ProgressCircle extends View {
 	}
 	
 	public void setMax(int max) {
-		if (max >= mMin) {		
+		if ((max >= mMin) && (max != mMax)) {
 			mMax = max;
+            updateDisplayValues();
+			updateTextBounds();
 			if (mProgress > mMax) {
 				setProgress(mMax);
 			} else {
@@ -158,7 +192,6 @@ public class ProgressCircle extends View {
 	}
 	
 	public void setProgress(int progress) {
-		
 		// change progress
 		if (progress < mMin) {
 			mProgress = mMin;
@@ -166,12 +199,12 @@ public class ProgressCircle extends View {
 			mProgress = mMax;
 		} else
 			mProgress = progress;
-		mDisplayProgress = getDisplayProgress();
+		mDisplayProgressText = getDisplayProgress();
 		
 		//redraw control
 		invalidate();
 		
-		//autohide support
+		//autoHide support
 		if (mAutoHide) {
 			if (((mPrevProgress == mMin) && (mProgress != mMin)) || ((mPrevProgress != mMin) && (mProgress == mMin))) {
 				requestLayout();
@@ -193,10 +226,49 @@ public class ProgressCircle extends View {
         invalidate();
     }
 
-    private void updateTextBounds() {
+	public void setProgressColor(int color) {
+		mProgressColor = color;
+		invalidate();
+	}
+
+	public void setProgressRestColor(int color) {
+		mProgressRestColor = color;
+		invalidate();
+	}
+
+	public void setArcMargin(int value) {
+		mArcMargin = value;
+		invalidate();
+	}
+
+	public void setArcThickness(int value) {
+		mArcPaint.setStrokeWidth(value);
+		invalidate();
+	}
+
+	public void setProgressStyle(int value) {
+		switch (value) {
+			case PROGRESS_STYLE_PERCENT:
+				mProgressStyle = PROGRESS_STYLE_PERCENT;
+				break;
+			case PROGRESS_STYLE_VALUE:
+				mProgressStyle = PROGRESS_STYLE_VALUE;
+				break;
+			default:
+				return;
+		}
+
+		updateDisplayValues();
+		updateTextBounds();
+		invalidate();
+	}
+
+	private void updateTextBounds() {
         //calc text bounds
+		int maxTextLength = mProgressStyle == PROGRESS_STYLE_PERCENT ? mMaxValueDigits + 1 : mMaxValueDigits;
+        String boundsString = new String(new char[maxTextLength]).replace("\0", "0");
         mTextBounds = new Rect();
-        mTextPaint.getTextBounds("000", 0, 3, mTextBounds);
+        mTextPaint.getTextBounds(boundsString, 0, maxTextLength, mTextBounds);
     }
 	
 	@Override
@@ -206,7 +278,7 @@ public class ProgressCircle extends View {
 		final int width = getWidth();
 		final int height = getHeight();
 		
-		canvas.drawText(mDisplayProgress, (width - mTextBounds.width()) / 2, height - (height - mTextBounds.height()) / 2, mTextPaint);
+		canvas.drawText(mDisplayProgressText, (width - mTextBounds.width()) / 2, height - (height - mTextBounds.height()) / 2, mTextPaint);
 
 		//draw border for testing purposes
 		//canvas.drawRect(0, 0, width, height, mTextPaint);
@@ -261,9 +333,6 @@ public class ProgressCircle extends View {
         		size = Math.min(widthWithoutPadding, heigthWithoutPadding);
         	}
         	
-        	//get size if specified exactly
-        	//size = Math.max(widthWithoutPadding, heigthWithoutPadding);
-        	
         	if (size > 0 ) {
         		mMostSize = size;
         	}
@@ -278,7 +347,7 @@ public class ProgressCircle extends View {
         	size = mMostSize;
         }
         
-        //autohide support
+        //autoHide support
         if (mAutoHide) {
 	        if (mProgress == mMin) {
 	        	size = 0;

@@ -59,9 +59,9 @@
         app:progressRestColor="#FF6677AA"
         app:arcMargin="7dp"
         app:arcThickness="3dp"
-        app:progressStyle="percent"
-        app:min="10"
-        app:max="85"
+        app:progressStyle="value"
+        app:min="4"
+        app:max="99"
         />
 
     <SeekBar
@@ -69,7 +69,7 @@
         android:layout_width="100pt"
         android:layout_height="wrap_content"
         android:layout_below="@+id/progressCircle1"
-        android:max="100"
+        android:max="130"
         />
 
 
