@@ -288,7 +288,6 @@ public class SlideNumberPicker extends View implements GestureDetector.OnGesture
 
     @Override
     public boolean onDown(MotionEvent arg0) {
-
         mScroller.forceFinished(true);
         mAdjustScroller.forceFinished(true);
         mCurrentScrollY = (int)arg0.getY();
@@ -348,7 +347,6 @@ public class SlideNumberPicker extends View implements GestureDetector.OnGesture
     }
 
     private void finishScroll() {
-
         int currentScrollValue = (mCurrentScrollOffset > 0)? mCurrentScrollOffset % mItemHeight : mItemHeight + mCurrentScrollOffset % mItemHeight;
         mNewCalcValue = (currentScrollValue < (mItemHeight / 2)) ? mNextValue : mCurrentValue;
         int newScrollOffset = (currentScrollValue < (mItemHeight / 2)) ? -currentScrollValue : mItemHeight - currentScrollValue;
