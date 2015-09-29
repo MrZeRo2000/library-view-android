@@ -11,23 +11,33 @@
     tools:context=".MainActivity" >
 
     <TextView
-        android:id="@+id/textView"
+        android:id="@+id/textview1"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:text="@string/hello_world" />
+        android:text="@string/hello_world"
+        />
+
     <Button
-		android:id="@+id/button1"
-		android:layout_width="100dp"        
-		android:layout_height="50dp"
-		android:text="Get value"
-		android:layout_below="@+id/textView"
-        android:clickable="true"                
-        />    
+        android:id="@+id/getValueButton"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_below="@id/textview1"
+        android:text="getValue"
+        />
+    <Button
+        android:id="@+id/setValueButton"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:text="setValue"
+        android:layout_below="@id/textview1"
+        android:layout_toRightOf="@id/getValueButton"
+        />
+
     <com.romanpulov.library.view.SlideNumberPicker
         android:id="@+id/slideNumberPicker1"
         android:layout_width="50dp"
         android:layout_height="50dp"
-        android:layout_below="@+id/button1"
+        android:layout_below="@+id/getValueButton"
         />
     <com.romanpulov.library.view.SlideNumberPicker
         android:id="@+id/slideNumberPicker2"

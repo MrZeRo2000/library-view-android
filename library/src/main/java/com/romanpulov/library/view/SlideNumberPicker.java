@@ -98,8 +98,13 @@ public class SlideNumberPicker extends View implements GestureDetector.OnGesture
     
     public void setValue(int value) {
         if (value != mValue) {
+            if (value > mMax)
+                value = mMax;
+            if (value < mMin)
+                value = mMin;
             notifyChange(mValue, value);
             mValue = value;
+            mCurrentValue = mNextValue = mValue;
             invalidate();
         }
     }

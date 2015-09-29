@@ -18,17 +18,26 @@ public class MainActivity extends Activity {
 		super.onCreate(savedInstanceState);
 		setContentView(R.layout.activity_main);
 		
-	    final Button button = (Button) findViewById(R.id.button1);
-	    button.setOnClickListener(new View.OnClickListener() {
-	        public void onClick(View v) {
-	            // Perform action on click
+	    final Button getValueButton = (Button) findViewById(R.id.getValueButton);
+	    getValueButton.setOnClickListener(new View.OnClickListener() {
+            public void onClick(View v) {
+                // Perform action on click
 
-				SlideNumberPicker sp = new SlideNumberPicker(getApplicationContext());
-	        	final SlideNumberPicker picker = (SlideNumberPicker) findViewById(R.id.slideNumberPicker1);
-	        	Toast.makeText(getBaseContext(), "Value=" + picker.getValue(), Toast.LENGTH_SHORT).show();
+                final SlideNumberPicker picker = (SlideNumberPicker) findViewById(R.id.slideNumberPicker1);
+                Toast.makeText(getBaseContext(), "Value=" + picker.getValue(), Toast.LENGTH_SHORT).show();
 
-	        }
-	    });
+            }
+        });
+
+        final Button setValueButton = (Button) findViewById(R.id.setValueButton);
+        setValueButton.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                final SlideNumberPicker picker = (SlideNumberPicker) findViewById(R.id.slideNumberPicker1);
+                picker.setValue(25);
+                Toast.makeText(getBaseContext(), "Set Value =" + picker.getValue(), Toast.LENGTH_SHORT).show();
+            }
+        });
 
 		final SeekBar seekBar = (SeekBar) findViewById(R.id.seekBar1);
 		seekBar.setOnSeekBarChangeListener(new SeekBar.OnSeekBarChangeListener() {
