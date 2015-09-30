@@ -157,13 +157,28 @@ public class ProgressCircle extends View {
     }
 
     private String getDisplayProgress() {
-        if ((mProgress >= mMax) && (mProgressStyle == PROGRESS_STYLE_PERCENT) && (mMax == MAX_PERCENT_VALUE)) {
+        if ((mProgress >= mMax) && (mProgressStyle == PROGRESS_STYLE_PERCENT)) {
             // for 100% outputting unformatted
             return mMaxDisplayValueText;
         } else if (mMin == mProgress) {
             return mMinDisplayValueText;
         } else	{
-            return String.format(Locale.getDefault(), mDisplayValueFormat, mProgress);
+            int displayProgress;
+            switch (mProgressStyle) {
+                case PROGRESS_STYLE_VALUE:
+                    displayProgress = mProgress;
+                    break;
+                case PROGRESS_STYLE_PERCENT:
+                    if (mMax > mMin)
+                        displayProgress = (mProgress - mMin) * MAX_PERCENT_VALUE / (mMax - mMin);
+                    else
+                        displayProgress = mProgress;
+                    break;
+                default:
+                    displayProgress = mProgress;
+            }
+
+            return String.format(Locale.getDefault(), mDisplayValueFormat, displayProgress);
         }
     }
 

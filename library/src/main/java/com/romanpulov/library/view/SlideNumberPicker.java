@@ -271,7 +271,9 @@ public class SlideNumberPicker extends View implements GestureDetector.OnGesture
 
     @Override
     public boolean onTouchEvent(MotionEvent event) {
-        if (this.mDetector.onTouchEvent(event))
+        //disallow parent scrolling
+        getParent().requestDisallowInterceptTouchEvent(true);
+        if (mDetector.onTouchEvent(event))
             return true;
 
         int action = event.getActionMasked();
@@ -281,10 +283,11 @@ public class SlideNumberPicker extends View implements GestureDetector.OnGesture
                 invalidate();
                 mCurrentScrollY = (int) event.getY();
                 break;
-            case MotionEvent.ACTION_UP:
-                finishScroll();
-                break;
+             case MotionEvent.ACTION_UP:
             case MotionEvent.ACTION_CANCEL:
+                finishScroll();
+                //disallow parent scrolling after control scroll
+                getParent().requestDisallowInterceptTouchEvent(false);
                 break;
          }
 
