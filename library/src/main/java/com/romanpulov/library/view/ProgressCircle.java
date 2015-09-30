@@ -141,7 +141,7 @@ public class ProgressCircle extends View {
 
         switch (mProgressStyle) {
             case PROGRESS_STYLE_PERCENT:
-                maxDisplayValue = mMax > MAX_PERCENT_VALUE ? MAX_PERCENT_VALUE : mMax;
+                maxDisplayValue = MAX_PERCENT_VALUE;
                 mMaxValueDigits = PERCENT_VALUE_DIGITS;
                 break;
             case PROGRESS_STYLE_VALUE:
