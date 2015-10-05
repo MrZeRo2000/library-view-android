@@ -86,6 +86,11 @@
         android:layout_below="@+id/progressCircle1"
         android:max="140"
         />
+    <com.romanpulov.library.view.BarChart
+        android:layout_width="fill_parent"
+        android:layout_height="200dp"
+        android:layout_below="@+id/seekBar1"
+        />
 
 </RelativeLayout>
 </ScrollView>
