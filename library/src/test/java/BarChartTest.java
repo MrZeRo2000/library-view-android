@@ -18,22 +18,42 @@ import com.romanpulov.library.view.BarChart;
 public class BarChartTest {
 
     @Test
-    public void firstTest() {
+    public void first_test() {
         assertFalse(1==2);
+        System.out.println("first_test completed");
     }
 
     @Test
     public void chart_sorting() {
         BarChart bc = new BarChart(null);
         assertNotNull(bc);
-        List<BarChart.ChartValue> series = bc.addSeries();
-        series.add(new BarChart.ChartValue(3., "Three"));
-        series.add(new BarChart.ChartValue(1., "One"));
-        series.add(new BarChart.ChartValue(2., "Two"));
-        assertEquals(3., series.get(0).value, 1e-7);
+        BarChart.Series series = bc.addSeries();
+        series.addXY(3., "Three", 1.);
+        series.addXY(1., "One", 1.);
+        series.addXY(2., "Two", 1.);
+        assertEquals(3., series.get(0).x, 1e-7);
         bc.sortSeries(0);
-        assertEquals(1., series.get(0).value, 1e-7);
-        assertEquals(2., series.get(1).value, 1e-7);
-        assertEquals(3., series.get(2).value, 1e-7);
+        assertEquals(1., series.get(0).x, 1e-7);
+        assertEquals(2., series.get(1).x, 1e-7);
+        assertEquals(3., series.get(2).x, 1e-7);
+        System.out.println("chart_sorting completed");
     }
+
+    @Test
+    public void value_bounds() {
+        BarChart bc = new BarChart(null);
+        assertNotNull(bc);
+        BarChart.Series series = bc.addSeries();
+        series.addXY(3., "Three", 7.);
+        series.addXY(1., "One", -1.);
+        series.addXY(2., "Two", 6.);
+        series.updateValueBounds();
+        BarChart.ChartValueBounds vb = series.getValueBounds();
+        assertEquals(1., vb.getMinX(), 1e-7);
+        assertEquals(3., vb.getMaxX(), 1e-7);
+        assertEquals(-1., vb.getMinY(), 1e-7);
+        assertEquals(7., vb.getMaxY(), 1e-7);
+        System.out.println("value_bounds completed");
+    }
+
 }
