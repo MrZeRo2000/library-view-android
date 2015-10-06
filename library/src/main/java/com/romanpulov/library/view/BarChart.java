@@ -35,9 +35,14 @@ public class BarChart extends View {
         return newSeries;
     }
 
-    private class ChartValue implements Comparable {
+    public static class ChartValue implements Comparable {
         public Double value;
         public String displayValue;
+
+        public ChartValue(Double value, String displayValue) {
+            this.value = value;
+            this.displayValue = displayValue;
+        }
 
         @Override
         public int compareTo(Object another) {
