@@ -8,11 +8,8 @@ import android.util.AttributeSet;
 import android.view.View;
 
 import java.util.ArrayList;
-import java.util.Collection;
 import java.util.Collections;
 import java.util.List;
-
-import javax.xml.transform.Source;
 
 /**
  * Created on 05.10.2015.
@@ -38,43 +35,43 @@ public class BarChart extends View {
     }
 
     public static class ChartValueBounds {
-        public Double getMinX() {
+        public double getMinX() {
             return minX;
         }
 
-        public Double getMinY() {
+        public double getMinY() {
             return minY;
         }
 
-        public Double getMaxX() {
+        public double getMaxX() {
             return maxX;
         }
 
-        public Double getMaxY() {
+        public double getMaxY() {
             return maxY;
         }
 
-        private Double minX;
-        private Double minY;
-        private Double maxX;
-        private Double maxY;
+        private double minX;
+        private double minY;
+        private double maxX;
+        private double maxY;
 
-        public ChartValueBounds (Double minX, Double minY, Double maxX, Double maxY) {
+        public ChartValueBounds (double minX, double minY, double maxX, double maxY) {
             this.minX = minX;
             this.minY = minY;
             this.maxX = maxX;
             this.maxY = maxY;
         }
 
-        public void setBounds (Double minX, Double minY, Double maxX, Double maxY) {
+        public void setBounds (double minX, double minY, double maxX, double maxY) {
             this.minX = minX;
             this.minY = minY;
             this.maxX = maxX;
             this.maxY = maxY;
         }
 
-        public Double[] getBounds() {
-            return new Double[] {minX, minY, maxX, maxY};
+        public double[] getBounds() {
+            return new double[] {minX, minY, maxX, maxY};
         }
     }
 
@@ -84,10 +81,10 @@ public class BarChart extends View {
         private ChartValueBounds mValueBounds;
 
         public void updateValueBounds() {
-            Double minX = Double.MAX_VALUE;
-            Double minY = Double.MAX_VALUE;
-            Double maxX = Double.MIN_VALUE;
-            Double maxY = Double.MIN_VALUE;
+            double minX = Double.MAX_VALUE;
+            double minY = Double.MAX_VALUE;
+            double maxX = Double.MIN_VALUE;
+            double maxY = Double.MIN_VALUE;
             for (ChartValue v : mData) {
                 if (minX > v.x)
                     minX = v.x;
@@ -150,8 +147,90 @@ public class BarChart extends View {
         Collections.sort(mSeriesList.get(seriesIndex).getList());
     }
 
-    public static class ChartLayout {
+    public static class ChartAxis {
+        public static final int AXIS_TYPE_ARGUMENT = 0;
+        public static final int AXIS_TYPE_VALUE = 1;
 
+        private int mAxisType;
+        private int mSize;
+
+        private double mMinValue;
+        private double mMaxValue;
+        private int mCount;
+
+        public double getMinValue() {
+            return mMinValue;
+        }
+
+        public double getMaxValue() {
+            return mMaxValue;
+        }
+
+        public int getCount() {
+            return mCount;
+        }
+
+        public ChartAxis(int axisType) {
+            mAxisType = axisType;
+        }
+
+        public void setRange(double minValue, double maxValue, int size) {
+            if (minValue > 0)
+                mMinValue = 0d;
+            else
+                //this is actually not supported
+                mMinValue = minValue;
+
+            int iMaxValue = (int)maxValue;
+
+            switch (mAxisType) {
+                case AXIS_TYPE_ARGUMENT:
+                    mMaxValue = iMaxValue;
+                    break;
+                case AXIS_TYPE_VALUE:
+                    int lastDigit = iMaxValue % 10;
+                    if (lastDigit < 5)
+                        mMaxValue = iMaxValue - lastDigit + 5;
+                    else
+                        mMaxValue = iMaxValue - lastDigit + 10;
+                    break;
+                default:
+                    mMaxValue = Math.round(maxValue);
+            }
+        }
+
+        private void calcCount() {
+
+        }
+
+        public void setSize(int size) {
+            mSize = size;
+            calcCount();
+        }
+    }
+
+    public static class ChartLayout {
+        //input data
+        private int mWidth;
+        private int mHeight;
+        private Series mSeries;
+        //calculated
+        private int offsetLeft;
+        private int offsetTop;
+        private int offsetRight;
+        private int offsetBottom;
+        private ChartAxis xAxis;
+        private ChartAxis yAxis;
+
+        public void updateLayout(int width, int height, Series series) {
+            mWidth = width;
+            mHeight = height;
+            mSeries = series;
+        }
+
+        private void calcLayout() {
+
+        }
     }
 
     public BarChart(Context context) {
