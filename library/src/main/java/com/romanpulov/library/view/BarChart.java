@@ -209,6 +209,62 @@ public class BarChart extends View {
         }
     }
 
+    public static class AxisValueCalculator {
+        private int mValue;
+        private int mFirstNum;
+        private int mSecondNum;
+        private int mFactor;
+        private int mScaleFactor;
+        private int mMaxValue;
+        private int mCount;
+
+        public void calcForValue(int value) {
+            mValue = value;
+
+            //calc basics - first, second, factor
+            mFirstNum = -1;
+            mSecondNum = -1;
+            mFactor = 0;
+            while (value > 9) {
+                if (value < 100) {
+                    mFirstNum = value / 10;
+                    mSecondNum = value - 10 * (value / 10);
+                    break;
+                }
+                value = value / 10;
+                mFactor ++;
+            }
+
+            //scale factor logic
+            if (mFirstNum == 1)
+                mScaleFactor = 2;
+            else if (mFirstNum < 5)
+                mScaleFactor = 5;
+            else
+                mScaleFactor = 10;
+            mScaleFactor = mScaleFactor * (int)Math.pow(10d, mFactor);
+
+            //max value
+            mMaxValue = mValue - (mValue % mScaleFactor) + mScaleFactor;
+            //count
+            mCount = mMaxValue / mScaleFactor;
+
+        }
+
+        @Override
+        public String toString() {
+            return "value=" + mValue + ", " +
+                    "FirstNum=" + mFirstNum + ", " +
+                    "SecondNum=" + mSecondNum + ", " +
+                    "Factor=" + mFactor + ", " +
+                    "ScaleFactor=" + mScaleFactor + ", " +
+                    "MaxValue=" + mMaxValue + ", " +
+                    "Count=" + mCount
+                    ;
+        }
+
+    }
+
     public static class ChartLayout {
         //input data
         private int mWidth;
