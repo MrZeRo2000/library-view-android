@@ -215,11 +215,24 @@ public class BarChart extends View {
         private int mSecondNum;
         private int mFactor;
         private int mScaleFactor;
-        private int mMaxValue;
+        private double mMaxValue;
         private int mCount;
 
-        public void calcForValue(int value) {
+        public void calcForValue(int value, int maxCount) {
             mValue = value;
+
+            //count correction
+            if (maxCount > 10)
+                maxCount = 10;
+            else if (maxCount == 9)
+                maxCount = 8;
+
+            if ((value > 0) && (value < 10)) {
+                calcForValue(value * maxCount, maxCount);
+                mValue = mValue / maxCount;
+                mMaxValue = mMaxValue / maxCount;
+                return;
+            }
 
             //calc basics - first, second, factor
             mFirstNum = -1;
@@ -247,8 +260,15 @@ public class BarChart extends View {
             //max value
             mMaxValue = mValue - (mValue % mScaleFactor) + mScaleFactor;
             //count
-            mCount = mMaxValue / mScaleFactor;
+            mCount = (int)mMaxValue / mScaleFactor;
 
+            if (maxCount < 10) {
+                mCount = maxCount;
+                if (mScaleFactor == 2)
+                    mScaleFactor = 5;
+                mMaxValue = (int)(mValue / maxCount);
+                mMaxValue = (mMaxValue - (mMaxValue % mScaleFactor) + mScaleFactor) * mCount;
+            }
         }
 
         @Override

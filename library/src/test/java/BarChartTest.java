@@ -78,8 +78,10 @@ public class BarChartTest {
     @Test
     public void axisValueCalculator_first() {
         BarChart.AxisValueCalculator ax = new BarChart.AxisValueCalculator();
-        for (int i = 11; i < 101; i++) {
-            ax.calcForValue(i);
+        for (int i = 1; i < 101; i++) {
+            //ax.calcForValue(i, 10);
+            //System.out.println(ax);
+            ax.calcForValue(i, 7);
             System.out.println(ax);
         }
     }
