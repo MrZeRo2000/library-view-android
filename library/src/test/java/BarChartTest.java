@@ -1,10 +1,6 @@
 
 import org.junit.Test;
 
-import java.util.ArrayList;
-import java.util.List;
-import java.util.regex.Pattern;
-
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertNotNull;
@@ -75,14 +71,45 @@ public class BarChartTest {
         System.out.println("chartaxis_maxvalue completed");
     }
 
-    @Test
-    public void axisValueCalculator_first() {
-        BarChart.AxisValueCalculator ax = new BarChart.AxisValueCalculator();
+    //@Test
+    public void axisValueCalculator_test10() {
+        BarChart.ValueAxisScaleCalculator ax = new BarChart.ValueAxisScaleCalculator();
         for (int i = 1; i < 101; i++) {
-            //ax.calcForValue(i, 10);
-            //System.out.println(ax);
-            ax.calcForValue(i, 7);
+            ax.calcAxisScale(i, 10);
             System.out.println(ax);
+        }
+    }
+
+    //@Test
+    public void axisValueCalculator_test7() {
+        BarChart.ValueAxisScaleCalculator ax = new BarChart.ValueAxisScaleCalculator();
+        for (int i = 1; i < 101; i++) {
+            ax.calcAxisScale(i, 6);
+            System.out.println(ax);
+        }
+    }
+
+    //@Test
+    public void axisValueCalculator_adaptive() {
+        BarChart.ValueAxisScaleCalculator ax = new BarChart.ValueAxisScaleCalculator();
+        for (int i = 1; i < 101; i++) {
+            ax.calcAxisScale(i, 7);
+            System.out.println("CalcForValue:");
+            System.out.println(ax);
+            ax.calcAxisScaleAdaptive(i, 7);
+            System.out.println("CalcForValueAdaptive:");
+            System.out.println(ax);
+        }
+    }
+
+    @Test
+    public void axisScaleCalculator_class() {
+        BarChart.AxisScaleCalculator ac = new BarChart.ValueAxisScaleCalculator();
+        BarChart.AxisScale as = new BarChart.AxisScale();
+        for (int i = 1; i < 101; i++) {
+            as.setScale(i, 3);
+            ac.calcAxisScale(as);
+            System.out.println("" + i + " " + as);
         }
     }
 

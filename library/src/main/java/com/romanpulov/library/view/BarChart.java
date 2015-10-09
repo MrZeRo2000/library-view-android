@@ -10,6 +10,7 @@ import android.view.View;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
+import java.util.Locale;
 
 /**
  * Created on 05.10.2015.
@@ -209,7 +210,34 @@ public class BarChart extends View {
         }
     }
 
-    public static class AxisValueCalculator {
+    public static class AxisScale {
+        private double mMaxValue;
+        private int mCount;
+
+        public double getMaxValue() {
+            return mMaxValue;
+        }
+
+        public int getCount() {
+            return mCount;
+        }
+
+        public void setScale(double maxValue, int count) {
+            mMaxValue = maxValue;
+            mCount = count;
+        }
+
+        @Override
+        public String toString() {
+            return String.format(Locale.getDefault(), "[value=%4.1f, count=%d]", mMaxValue, mCount);
+        }
+    }
+
+    public interface AxisScaleCalculator {
+        void calcAxisScale(AxisScale axisScale);
+    }
+
+    public static class ValueAxisScaleCalculator implements AxisScaleCalculator {
         private int mValue;
         private int mFirstNum;
         private int mSecondNum;
@@ -218,17 +246,23 @@ public class BarChart extends View {
         private double mMaxValue;
         private int mCount;
 
-        public void calcForValue(int value, int maxCount) {
+        public void calcAxisScale(int value, int maxCount) {
             mValue = value;
 
             //count correction
             if (maxCount > 10)
                 maxCount = 10;
-            else if (maxCount == 9)
-                maxCount = 8;
+            else if (maxCount > 6)
+                maxCount = 6;
 
-            if ((value > 0) && (value < 10)) {
-                calcForValue(value * maxCount, maxCount);
+            if (value == 1) {
+                mMaxValue = 2.;
+                mCount = 1;
+                return;
+            }
+
+            if ((value > 1) && (value < 10) && (maxCount > 1)) {
+                calcAxisScale(value * maxCount, maxCount);
                 mValue = mValue / maxCount;
                 mMaxValue = mMaxValue / maxCount;
                 return;
@@ -255,7 +289,7 @@ public class BarChart extends View {
                 mScaleFactor = 5;
             else
                 mScaleFactor = 10;
-            mScaleFactor = mScaleFactor * (int)Math.pow(10d, mFactor);
+            mScaleFactor = mScaleFactor * (int)Math.pow(10, mFactor);
 
             //max value
             mMaxValue = mValue - (mValue % mScaleFactor) + mScaleFactor;
@@ -271,6 +305,25 @@ public class BarChart extends View {
             }
         }
 
+        public void calcAxisScaleAdaptive(int value, int maxCount) {
+            //initial calc
+            calcAxisScale(value, maxCount);
+            //save calc data
+            double origMaxValue = mMaxValue;
+            int origCount = mCount;
+            double origGap = mMaxValue - value;
+
+            //try to find better values
+            if ((mCount > 2) && (mCount < 10)) {
+                calcAxisScale(value, mCount - 1);
+                // revert original if no good
+                if ((mMaxValue - value) >= origGap) {
+                    mMaxValue = origMaxValue;
+                    mCount = origCount;
+                }
+            }
+        }
+
         @Override
         public String toString() {
             return "value=" + mValue + ", " +
@@ -283,6 +336,11 @@ public class BarChart extends View {
                     ;
         }
 
+        @Override
+        public void calcAxisScale(AxisScale axisScale) {
+            calcAxisScaleAdaptive((int)axisScale.getMaxValue(), axisScale.getCount());
+            axisScale.setScale(mMaxValue, mCount);
+        }
     }
 
     public static class ChartLayout {
