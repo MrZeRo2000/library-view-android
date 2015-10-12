@@ -8,6 +8,10 @@ import static org.junit.Assert.assertTrue;
 
 import com.romanpulov.library.view.BarChart;
 
+import java.util.Arrays;
+import java.util.List;
+import java.util.Locale;
+
 /**
  * Created by rpulov on 06.10.2015.
  */
@@ -52,21 +56,21 @@ public class BarChartTest {
         System.out.println("value_bounds completed");
     }
 
-    //@Test
+    @Test
     public void chartaxis_maxvalue() {
         BarChart.ChartAxis va = new BarChart.ChartAxis(BarChart.ChartAxis.AXIS_TYPE_ARGUMENT);
         va.setRange(0d, 8d, 100);
-        assertEquals(0d, va.getMinValue(), 1e-7);
-        assertEquals(8d, va.getMaxValue(), 1e-7);
+        assertEquals(0d, va.getAxisScale().getMinValue(), 1e-7);
+        assertEquals(8d, va.getAxisScale().getMaxValue(), 1e-7);
 
         BarChart.ChartAxis vv = new BarChart.ChartAxis(BarChart.ChartAxis.AXIS_TYPE_VALUE);
         vv.setRange(0d, 8d, 100);
-        assertEquals(0d, vv.getMinValue(), 1e-7);
-        assertEquals(10d, vv.getMaxValue(), 1e-7);
+        assertEquals(0d, vv.getAxisScale().getMinValue(), 1e-7);
+        assertEquals(10d, vv.getAxisScale().getMaxValue(), 1e-7);
 
         vv.setRange(0d, 23d, 100);
-        assertEquals(0d, vv.getMinValue(), 1e-7);
-        assertEquals(25d, vv.getMaxValue(), 1e-7);
+        assertEquals(0d, vv.getAxisScale().getMinValue(), 1e-7);
+        assertEquals(25d, vv.getAxisScale().getMaxValue(), 1e-7);
 
         System.out.println("chartaxis_maxvalue completed");
     }
@@ -102,15 +106,47 @@ public class BarChartTest {
         }
     }
 
-    @Test
+    //@Test
     public void axisScaleCalculator_class() {
         BarChart.AxisScaleCalculator ac = new BarChart.ValueAxisScaleCalculator();
         BarChart.AxisScale as = new BarChart.AxisScale();
         for (int i = 1; i < 101; i++) {
-            as.setScale(i, 3);
+            as.setScale(0d, i, 3);
             ac.calcAxisScale(as);
             System.out.println("" + i + " " + as);
         }
+    }
+
+    private String formatValue(double value) {
+        return String.valueOf(value);
+    }
+
+
+    @Test
+    public void valueformatter_function() {
+
+        class ValueFormatter {
+
+            String formatValue(double value) {
+                if (value < 10) {
+                    return String.format(Locale.getDefault(), "%1.1f", value);
+                } else if (value < 1000000) {
+                    return String.format(Locale.getDefault(), "%.0f", value);
+                } else
+                    return String.format(Locale.getDefault(), "%3.1e", value);
+            }
+        }
+
+        ValueFormatter vf = new ValueFormatter();
+        List<Double> valueList = Arrays.asList(
+                1d, 1.44345d, 9.4678d, 10d, 99d, 534234d, 5123423d
+        );
+
+        for (Double v : valueList) {
+            System.out.println("" + v + " " + vf.formatValue(v));
+        }
+
+
     }
 
 }

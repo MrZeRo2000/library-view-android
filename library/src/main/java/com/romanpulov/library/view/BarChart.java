@@ -153,8 +153,39 @@ public class BarChart extends View {
         public static final int AXIS_TYPE_VALUE = 1;
 
         private int mAxisType;
-        private int mSize;
+        private AxisScale mAxisScale = new AxisScale();
 
+        public AxisScale getAxisScale() {
+            return mAxisScale;
+        }
+
+        public ChartAxis(int axisType) {
+            mAxisType = axisType;
+        }
+
+        public void setRange(double minValue, double maxValue, int maxCount) {
+
+            if (minValue > 0)
+                minValue = 0d;
+
+            int iMaxValue = (int)maxValue;
+
+            switch (mAxisType) {
+                case AXIS_TYPE_ARGUMENT:
+                    mAxisScale.setScale(minValue, iMaxValue, iMaxValue);
+                    break;
+                case AXIS_TYPE_VALUE:
+                    mAxisScale.setScale(minValue, iMaxValue, maxCount);
+                    AxisScaleCalculator ax = new BarChart.ValueAxisScaleCalculator();
+                    ax.calcAxisScale(mAxisScale);
+                    break;
+                default:
+                    mAxisScale.resetScale();
+            }
+        }
+    }
+
+    public static class AxisScale {
         private double mMinValue;
         private double mMaxValue;
         private int mCount;
@@ -171,65 +202,21 @@ public class BarChart extends View {
             return mCount;
         }
 
-        public ChartAxis(int axisType) {
-            mAxisType = axisType;
-        }
-
-        public void setRange(double minValue, double maxValue, int size) {
-            if (minValue > 0)
-                mMinValue = 0d;
-            else
-                //this is actually not supported
-                mMinValue = minValue;
-
-            int iMaxValue = (int)maxValue;
-
-            switch (mAxisType) {
-                case AXIS_TYPE_ARGUMENT:
-                    mMaxValue = iMaxValue;
-                    break;
-                case AXIS_TYPE_VALUE:
-                    int lastDigit = iMaxValue % 10;
-                    if (lastDigit < 5)
-                        mMaxValue = iMaxValue - lastDigit + 5;
-                    else
-                        mMaxValue = iMaxValue - lastDigit + 10;
-                    break;
-                default:
-                    mMaxValue = Math.round(maxValue);
-            }
-        }
-
-        private void calcCount() {
-
-        }
-
-        public void setSize(int size) {
-            mSize = size;
-            calcCount();
-        }
-    }
-
-    public static class AxisScale {
-        private double mMaxValue;
-        private int mCount;
-
-        public double getMaxValue() {
-            return mMaxValue;
-        }
-
-        public int getCount() {
-            return mCount;
-        }
-
-        public void setScale(double maxValue, int count) {
+        public void setScale(double minValue, double maxValue, int count) {
+            mMinValue = minValue;
             mMaxValue = maxValue;
             mCount = count;
         }
 
+        public void resetScale() {
+            mMinValue = 0d;
+            mMaxValue = 0d;
+            mCount = 0;
+        }
+
         @Override
         public String toString() {
-            return String.format(Locale.getDefault(), "[value=%4.1f, count=%d]", mMaxValue, mCount);
+            return String.format(Locale.getDefault(), "[value=%.1e, count=%d]", mMaxValue, mCount);
         }
     }
 
@@ -339,27 +326,32 @@ public class BarChart extends View {
         @Override
         public void calcAxisScale(AxisScale axisScale) {
             calcAxisScaleAdaptive((int)axisScale.getMaxValue(), axisScale.getCount());
-            axisScale.setScale(mMaxValue, mCount);
+            axisScale.setScale(0d, mMaxValue, mCount);
         }
     }
 
     public static class ChartLayout {
+        private Paint mAxesTextPaint;
+        private Rect mAxesTextSymbolBounds = new Rect();
         //input data
         private int mWidth;
         private int mHeight;
         private Series mSeries;
         //calculated
-        private int offsetLeft;
-        private int offsetTop;
-        private int offsetRight;
-        private int offsetBottom;
-        private ChartAxis xAxis;
-        private ChartAxis yAxis;
+        private Rect chartRect;
+        private ChartAxis xAxis = new ChartAxis(ChartAxis.AXIS_TYPE_ARGUMENT);
+        private ChartAxis yAxis = new ChartAxis(ChartAxis.AXIS_TYPE_VALUE);
+
+        public void setAxesTextPaint(Paint axesTextPaint) {
+            mAxesTextPaint = axesTextPaint;
+            mAxesTextPaint.getTextBounds("0", 0, 1, mAxesTextSymbolBounds);
+        }
 
         public void updateLayout(int width, int height, Series series) {
             mWidth = width;
             mHeight = height;
             mSeries = series;
+            calcLayout();
         }
 
         private void calcLayout() {
