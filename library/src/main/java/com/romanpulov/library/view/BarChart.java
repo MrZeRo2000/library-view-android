@@ -183,6 +183,14 @@ public class BarChart extends View {
                     mAxisScale.resetScale();
             }
         }
+
+        @Override
+        public String toString() {
+            return "{AxisType=" +
+                    mAxisType + ", " +
+                    "AxisScale=" + mAxisScale.toString() +
+                    "}";
+        }
     }
 
     public static class AxisScale {
@@ -216,7 +224,7 @@ public class BarChart extends View {
 
         @Override
         public String toString() {
-            return String.format(Locale.getDefault(), "[value=%.1e, count=%d]", mMaxValue, mCount);
+            return String.format(Locale.getDefault(), "[value=%f, count=%d]", mMaxValue, mCount);
         }
     }
 
@@ -330,7 +338,23 @@ public class BarChart extends View {
         }
     }
 
+    public static class ValueFormatter {
+        public static String formatValue(double value) {
+            if (value < 10) {
+                return String.format(Locale.getDefault(), "%1.1f", value);
+            } else if (value < 1000000) {
+                return String.format(Locale.getDefault(), "%.0f", value);
+            } else
+                return String.format(Locale.getDefault(), "%3.1e", value);
+        }
+    }
+
+
     public static class ChartLayout {
+        //general margin
+        static final int CHART_MARGIN = 5;
+        static final int CHART_TEXT_MARGIN = 2;
+
         private Paint mAxesTextPaint;
         private Rect mAxesTextSymbolBounds = new Rect();
         //input data
@@ -338,9 +362,26 @@ public class BarChart extends View {
         private int mHeight;
         private Series mSeries;
         //calculated
-        private Rect chartRect;
-        private ChartAxis xAxis = new ChartAxis(ChartAxis.AXIS_TYPE_ARGUMENT);
-        private ChartAxis yAxis = new ChartAxis(ChartAxis.AXIS_TYPE_VALUE);
+        private Rect mChartRect = new Rect();
+        private ChartAxis mXAxis = new ChartAxis(ChartAxis.AXIS_TYPE_ARGUMENT);
+        private ChartAxis mYAxis = new ChartAxis(ChartAxis.AXIS_TYPE_VALUE);
+        private boolean mIsLayoutValid = true;
+
+        public Rect getChartRect() {
+            return mChartRect;
+        }
+
+        public ChartAxis getXAxis() {
+            return mXAxis;
+        }
+
+        public ChartAxis getYAxis() {
+            return mYAxis;
+        }
+
+        public boolean getLayoutValid() {
+            return mIsLayoutValid;
+        }
 
         public void setAxesTextPaint(Paint axesTextPaint) {
             mAxesTextPaint = axesTextPaint;
@@ -352,10 +393,29 @@ public class BarChart extends View {
             mHeight = height;
             mSeries = series;
             calcLayout();
+
+            mIsLayoutValid = mChartRect.height() > 3 * (mAxesTextSymbolBounds.height() + CHART_TEXT_MARGIN);
         }
 
         private void calcLayout() {
+            //chart body rect
+            mChartRect.top = CHART_MARGIN;
+            //  ensure bounds are calculated
+            mSeries.updateValueBounds();
+            //  calc according to bounds
+            ChartValueBounds chartValueBounds = mSeries.getValueBounds();
+            double maxY = chartValueBounds.getMaxY();
+            String displayMaxY = ValueFormatter.formatValue(maxY);
+            mChartRect.left = CHART_MARGIN + mAxesTextSymbolBounds.width() * displayMaxY.length();
+            mChartRect.right = mWidth - CHART_MARGIN;
+            mChartRect.bottom = mHeight - 2 * (mAxesTextSymbolBounds.height() + CHART_TEXT_MARGIN);
 
+            //axes
+            mXAxis.setRange(0, chartValueBounds.getMaxX(), (int)chartValueBounds.getMaxX());
+            int yAxisCount = mHeight / (mAxesTextSymbolBounds.height() * 2);
+            if (yAxisCount < 1)
+                yAxisCount = 1;
+            mYAxis.setRange(0, chartValueBounds.getMaxY(), yAxisCount);
         }
     }
 
