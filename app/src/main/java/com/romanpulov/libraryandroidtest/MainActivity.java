@@ -2,14 +2,14 @@ package com.romanpulov.libraryandroidtest;
 
 import android.os.Bundle;
 import android.app.Activity;
+import android.util.Log;
 import android.view.Menu;
 import android.widget.Button;
 import android.widget.SeekBar;
 import android.widget.Toast;
 import android.view.View;
 
-import com.romanpulov.library.view.ProgressCircle;
-import com.romanpulov.library.view.SlideNumberPicker;
+import com.romanpulov.library.view.*;
 
 public class MainActivity extends Activity {
 
@@ -41,23 +41,30 @@ public class MainActivity extends Activity {
 
 		final SeekBar seekBar = (SeekBar) findViewById(R.id.seekBar1);
 		seekBar.setOnSeekBarChangeListener(new SeekBar.OnSeekBarChangeListener() {
-			@Override
-			public void onProgressChanged(SeekBar seekBar, int progress, boolean fromUser) {
-				final ProgressCircle ps = (ProgressCircle) findViewById(R.id.progressCircle1);
-				ps.setProgress(progress);
-			}
+            @Override
+            public void onProgressChanged(SeekBar seekBar, int progress, boolean fromUser) {
+                final ProgressCircle ps = (ProgressCircle) findViewById(R.id.progressCircle1);
+                ps.setProgress(progress);
+            }
 
-			@Override
-			public void onStartTrackingTouch(SeekBar seekBar) {
+            @Override
+            public void onStartTrackingTouch(SeekBar seekBar) {
 
-			}
+            }
 
-			@Override
-			public void onStopTrackingTouch(SeekBar seekBar) {
+            @Override
+            public void onStopTrackingTouch(SeekBar seekBar) {
 
-			}
-		});
+            }
+        });
 
+        final BarChart barChart = (BarChart) findViewById(R.id.barChart1);
+        BarChart.Series series =  barChart.addSeries();
+        series.addXY(1d, "Item 1", 2d);
+        series.addXY(2d, "Item 2", 1d);
+        series.addXY(3d, "Item 3", 5d);
+        series.updateValueBounds();
+        Log.d("BarChart", "AfterSeriesAdded");
 	};
 
 	@Override

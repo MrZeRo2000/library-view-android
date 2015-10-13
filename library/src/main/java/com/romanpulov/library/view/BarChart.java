@@ -5,6 +5,8 @@ import android.graphics.Canvas;
 import android.graphics.Paint;
 import android.graphics.Rect;
 import android.util.AttributeSet;
+import android.util.Log;
+import android.util.TypedValue;
 import android.view.View;
 
 import java.util.ArrayList;
@@ -19,11 +21,14 @@ import java.util.Locale;
 public class BarChart extends View {
 
     private static int AXES_PADDING = 30;
+    private static int BAR_ITEM_WIDTH = 30;
+
+    private ChartLayout mChartLayout;
 
     private Paint mAxesPaint;
     private Paint mAxesTextPaint;
 
-    private List<Series> mSeriesList = new ArrayList<>();
+    private SeriesList mSeriesList = new SeriesList();
 
     public Series getSeries(int location) {
         return mSeriesList.get(location);
@@ -36,26 +41,14 @@ public class BarChart extends View {
     }
 
     public static class ChartValueBounds {
-        public double getMinX() {
-            return minX;
+        public double minX;
+        public double minY;
+        public double maxX;
+        public double maxY;
+        
+        public ChartValueBounds() {
+            resetBounds();
         }
-
-        public double getMinY() {
-            return minY;
-        }
-
-        public double getMaxX() {
-            return maxX;
-        }
-
-        public double getMaxY() {
-            return maxY;
-        }
-
-        private double minX;
-        private double minY;
-        private double maxX;
-        private double maxY;
 
         public ChartValueBounds (double minX, double minY, double maxX, double maxY) {
             this.minX = minX;
@@ -74,8 +67,49 @@ public class BarChart extends View {
         public double[] getBounds() {
             return new double[] {minX, minY, maxX, maxY};
         }
+        
+        public void resetBounds() {
+            minX = maxX = minY = maxY = 0d;
+        }
     }
 
+    public static class SeriesList {
+        private List<Series> mData = new ArrayList<>();
+        private ChartValueBounds mValueBounds;        
+        
+        public boolean add(Series series) {
+            return mData.add(series);
+        }
+
+        public Series get(int location) {
+            return mData.get(location);
+        }
+        
+        public void updateValueBounds() {
+            if (mValueBounds == null)
+                mValueBounds = new ChartValueBounds();
+            else
+                mValueBounds.resetBounds();
+
+            for (Series series : mData) {
+                series.updateValueBounds();
+                ChartValueBounds seriesBounds = series.getValueBounds();
+                if (seriesBounds.minX < mValueBounds.minX) 
+                    mValueBounds.minX = seriesBounds.minX;
+                if (seriesBounds.maxX > mValueBounds.maxX)
+                    mValueBounds.maxX = seriesBounds.maxX;
+                if (seriesBounds.minY < mValueBounds.minY)
+                    mValueBounds.minY = seriesBounds.minY;
+                if (seriesBounds.maxY > mValueBounds.maxY)
+                    mValueBounds.maxY = seriesBounds.maxY;
+            }
+        }
+
+        public ChartValueBounds getValueBounds() {
+            return mValueBounds;
+        }
+    }
+    
     public static class Series {
         private List<ChartValue> mData = new ArrayList<>();
 
@@ -360,7 +394,7 @@ public class BarChart extends View {
         //input data
         private int mWidth;
         private int mHeight;
-        private Series mSeries;
+        private SeriesList mSeriesList;
         //calculated
         private Rect mChartRect = new Rect();
         private ChartAxis mXAxis = new ChartAxis(ChartAxis.AXIS_TYPE_ARGUMENT);
@@ -388,10 +422,10 @@ public class BarChart extends View {
             mAxesTextPaint.getTextBounds("0", 0, 1, mAxesTextSymbolBounds);
         }
 
-        public void updateLayout(int width, int height, Series series) {
+        public void updateLayout(int width, int height, SeriesList seriesList) {
             mWidth = width;
             mHeight = height;
-            mSeries = series;
+            mSeriesList = seriesList;
             calcLayout();
 
             mIsLayoutValid = mChartRect.height() > 3 * (mAxesTextSymbolBounds.height() + CHART_TEXT_MARGIN);
@@ -401,21 +435,21 @@ public class BarChart extends View {
             //chart body rect
             mChartRect.top = CHART_MARGIN;
             //  ensure bounds are calculated
-            mSeries.updateValueBounds();
+            mSeriesList.updateValueBounds();
             //  calc according to bounds
-            ChartValueBounds chartValueBounds = mSeries.getValueBounds();
-            double maxY = chartValueBounds.getMaxY();
+            ChartValueBounds chartValueBounds = mSeriesList.getValueBounds();
+            double maxY = chartValueBounds.maxY;
             String displayMaxY = ValueFormatter.formatValue(maxY);
             mChartRect.left = CHART_MARGIN + mAxesTextSymbolBounds.width() * displayMaxY.length();
             mChartRect.right = mWidth - CHART_MARGIN;
             mChartRect.bottom = mHeight - 2 * (mAxesTextSymbolBounds.height() + CHART_TEXT_MARGIN);
 
             //axes
-            mXAxis.setRange(0, chartValueBounds.getMaxX(), (int)chartValueBounds.getMaxX());
+            mXAxis.setRange(0, chartValueBounds.maxX, (int)chartValueBounds.maxX);
             int yAxisCount = mHeight / (mAxesTextSymbolBounds.height() * 2);
             if (yAxisCount < 1)
                 yAxisCount = 1;
-            mYAxis.setRange(0, chartValueBounds.getMaxY(), yAxisCount);
+            mYAxis.setRange(0, chartValueBounds.maxY, yAxisCount);
         }
     }
 
@@ -429,12 +463,43 @@ public class BarChart extends View {
         mAxesPaint = new Paint();
         mAxesPaint.setStyle(Paint.Style.STROKE);
         mAxesTextPaint = new Paint();
+
+        mChartLayout = new ChartLayout();
+        mChartLayout.setAxesTextPaint(mAxesPaint);
     }
 
     @Override
     protected void onSizeChanged(int w, int h, int oldw, int oldh) {
         super.onSizeChanged(w, h, oldw, oldh);
+        /*
+        mSeriesList.updateValueBounds();
+        mChartLayout.updateLayout(w, h, mSeriesList);
+        Log.d("BarChart", "onSizeChanged (" + w + ", " + h + ")");
+        Log.d("BarChart", "ChartLayout.XAxis=" + mChartLayout.getXAxis());
+        */
+    }
 
+    @Override
+    protected void onMeasure(int widthMeasureSpec, int heightMeasureSpec) {
+        super.onMeasure(widthMeasureSpec, heightMeasureSpec);
+        Log.d("BarChart", "onMeasure");
+
+        int width = getMeasuredWidth();
+        int height = getMeasuredHeight();
+        int widthWithoutPadding = width - getPaddingLeft() - getPaddingRight();
+        int heigthWithoutPadding = height - getPaddingTop() - getPaddingBottom();
+
+        mSeriesList.updateValueBounds();
+        mChartLayout.updateLayout(widthWithoutPadding, heigthWithoutPadding, mSeriesList);
+        Log.d("BarChart", "size without padding (" + widthWithoutPadding + ", " + heigthWithoutPadding + ")");
+        Log.d("BarChart", "ChartLayout.XAxis=" + mChartLayout.getXAxis());
+
+
+        //mChartLayout.getXAxis().getAxisScale().getMaxValue()
+        int newWidth = (int)TypedValue.applyDimension(TypedValue.COMPLEX_UNIT_DIP, (float)(BAR_ITEM_WIDTH * mChartLayout.getXAxis().getAxisScale().getMaxValue()), getResources().getDisplayMetrics());
+
+        setMeasuredDimension(newWidth + getPaddingLeft() + getPaddingRight(), height);
+        Log.d("BarChart", "Width=" + width + ", newWidth=" + newWidth + getPaddingLeft() + getPaddingRight());
     }
 
     @Override

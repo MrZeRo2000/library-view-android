@@ -27,14 +27,17 @@ public class ApplicationTest extends ApplicationTestCase<Application> {
         series.addXY(4d, "value 4", 1d);
         series.addXY(5d, "value 5", 5d);
 
+        BarChart.SeriesList seriesList = new BarChart.SeriesList();
+        seriesList.add(series);
+
         Paint paint = new Paint();
 
         BarChart.ChartLayout cl = new BarChart.ChartLayout();
         cl.setAxesTextPaint(paint);
-        int width = 300;
+        int width = 0;
         int height = 70;
 
-        cl.updateLayout(width, height, series);
+        cl.updateLayout(width, height, seriesList);
         Log.d("ApplicationTest", "ChartRect = " + cl.getChartRect() + " IsLayoutValid = " + cl.getLayoutValid());
         Log.d("ApplicationTest", "xAxis = " + cl.getXAxis());
         Log.d("ApplicationTest", "yAxis = " + cl.getYAxis());
