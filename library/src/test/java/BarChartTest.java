@@ -1,5 +1,6 @@
 
 import android.graphics.Paint;
+import android.util.DisplayMetrics;
 
 import org.junit.Test;
 
@@ -12,7 +13,6 @@ import com.romanpulov.library.view.BarChart;
 
 import java.util.Arrays;
 import java.util.List;
-import java.util.Locale;
 
 /**
  * Created by rpulov on 06.10.2015.
@@ -51,10 +51,10 @@ public class BarChartTest {
         series.addXY(2., "Two", 6.);
         series.updateValueBounds();
         BarChart.ChartValueBounds vb = series.getValueBounds();
-        assertEquals(1., vb.getMinX(), 1e-7);
-        assertEquals(3., vb.getMaxX(), 1e-7);
-        assertEquals(-1., vb.getMinY(), 1e-7);
-        assertEquals(7., vb.getMaxY(), 1e-7);
+        assertEquals(1., vb.minX, 1e-7);
+        assertEquals(3., vb.maxX, 1e-7);
+        assertEquals(-1., vb.minY, 1e-7);
+        assertEquals(7., vb.maxY, 1e-7);
         System.out.println("value_bounds completed");
     }
 
@@ -127,7 +127,7 @@ public class BarChartTest {
     //@Test
     public void valueformatter_function() {
 
-        BarChart.ValueFormatter vf = new BarChart.ValueFormatter();
+        BarChart.ChartValueFormatter vf = new BarChart.ChartValueFormatter();
         List<Double> valueList = Arrays.asList(
                 1d, 1.44345d, 9.4678d, 10d, 99d, 534234d, 5123423d
         );
@@ -151,6 +151,9 @@ public class BarChartTest {
         series.addXY(4d, "value 4", 1d);
         series.addXY(5d, "value 5", 5d);
 
+        BarChart.SeriesList seriesList = new BarChart.SeriesList();
+        seriesList.add(series);
+
         Paint paint = new Paint();
 
         BarChart.ChartLayout cl = new BarChart.ChartLayout();
@@ -158,7 +161,8 @@ public class BarChartTest {
         int width = 300;
         int height = 30;
 
-        cl.updateLayout(width, height, series);
+        DisplayMetrics dm = new DisplayMetrics();
+        cl.updateLayout(width, height, dm, seriesList);
         System.out.print("ChartRect = " + cl.getChartRect());
     }
 

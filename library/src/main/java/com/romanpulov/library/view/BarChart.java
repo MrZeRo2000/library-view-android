@@ -12,6 +12,7 @@ import android.view.View;
 
 import java.util.ArrayList;
 import java.util.Collections;
+import java.util.Iterator;
 import java.util.List;
 import java.util.Locale;
 
@@ -71,7 +72,7 @@ public class BarChart extends View {
         }
     }
 
-    public static class SeriesList {
+    public static class SeriesList implements Iterable<Series> {
         private List<Series> mData = new ArrayList<>();
         private ChartValueBounds mValueBounds;        
         
@@ -82,7 +83,11 @@ public class BarChart extends View {
         public Series get(int location) {
             return mData.get(location);
         }
-        
+
+        public int size() {
+            return mData.size();
+        }
+
         public void updateValueBounds() {
             if (mValueBounds == null)
                 mValueBounds = new ChartValueBounds();
@@ -105,6 +110,11 @@ public class BarChart extends View {
 
         public ChartValueBounds getValueBounds() {
             return mValueBounds;
+        }
+
+        @Override
+        public Iterator iterator() {
+            return mData.iterator();
         }
     }
     
@@ -256,7 +266,7 @@ public class BarChart extends View {
 
         @Override
         public String toString() {
-            return String.format(Locale.getDefault(), "[value=%f, count=%d]", mMaxValue, mCount);
+            return String.format(Locale.getDefault(), "[maxValue=%f, count=%d]", mMaxValue, mCount);
         }
     }
 
@@ -285,6 +295,12 @@ public class BarChart extends View {
             if (value == 1) {
                 mMaxValue = 2.;
                 mCount = 1;
+                return;
+            }
+
+            if (value <= maxCount) {
+                mMaxValue = maxCount;
+                mCount = maxCount;
                 return;
             }
 
@@ -370,7 +386,7 @@ public class BarChart extends View {
         }
     }
 
-    public static class ValueFormatter {
+    public static class ChartValueFormatter {
         public static String formatValue(double value) {
             if (value < 10) {
                 return String.format(Locale.getDefault(), "%1.1f", value);
@@ -387,7 +403,7 @@ public class BarChart extends View {
         private static final int CHART_MARGIN = 5;
         private static final int CHART_TEXT_MARGIN = 2;
         private static final int BAR_ITEM_WIDTH = 100;
-        private static final int AXIS_MARK_SIZE = 5;
+        private static final int AXIS_MARK_SIZE = 4;
 
         private Paint mAxesTextPaint;
         private Rect mAxesTextSymbolBounds = new Rect();
@@ -398,6 +414,7 @@ public class BarChart extends View {
         private SeriesList mSeriesList;
         //calculated
         private int mCalcWidth;
+        private int mCalcItemHeight;
         private int mChartMargin;
         private int mChartTextMargin;
         private int mBarItemWidth;
@@ -423,6 +440,10 @@ public class BarChart extends View {
             return mBarItemWidth;
         }
 
+        public int getItemHeight() {
+            return mCalcItemHeight;
+        }
+
         public int getAxisMarkSize() {
             return mAxisMarkSize;
         }
@@ -441,6 +462,10 @@ public class BarChart extends View {
 
         public boolean getLayoutValid() {
             return mIsLayoutValid;
+        }
+
+        public Rect getAxesTextSymbolBounds() {
+            return mAxesTextSymbolBounds;
         }
 
         public void setAxesTextPaint(Paint axesTextPaint) {
@@ -478,21 +503,38 @@ public class BarChart extends View {
             //  calc according to bounds
             ChartValueBounds chartValueBounds = mSeriesList.getValueBounds();
             double maxY = chartValueBounds.maxY;
-            String displayMaxY = ValueFormatter.formatValue(maxY);
-            mChartRect.left = mChartMargin + mAxesTextSymbolBounds.width() * displayMaxY.length();
+            String displayMaxY = ChartValueFormatter.formatValue(maxY);
+            mChartRect.left = mChartMargin + mAxisMarkSize + mAxesTextSymbolBounds.width() * displayMaxY.length();
             //mChartRect.right = mWidth - mChartMargin - mBarItemWidth / 2;
-            mChartRect.right = (int)(mChartRect.left + getXAxis().getAxisScale().getMaxValue() * mBarItemWidth + mBarItemWidth / 2);
+            mChartRect.right = (int)(mChartRect.left + getXAxis().getAxisScale().getMaxValue() * mBarItemWidth);
             mChartRect.bottom = mHeight - 2 * (mAxesTextSymbolBounds.height() + mChartTextMargin) - mChartMargin - mChartMargin;
 
             //axes
             mXAxis.setRange(0, chartValueBounds.maxX, (int)chartValueBounds.maxX);
-            int yAxisCount = (mHeight - mChartMargin - mChartMargin) / ((mAxesTextSymbolBounds.height() + + mChartTextMargin) * 2);
+            int yAxisCount = (mHeight - mChartMargin - mChartMargin) / ((mAxesTextSymbolBounds.height() + mChartTextMargin) * 2);
             if (yAxisCount < 1)
                 yAxisCount = 1;
+            Log.d("BarChart", "Axis.setRange maxY=" + chartValueBounds.maxY + ", yAxisCount=" + yAxisCount);
             mYAxis.setRange(0, chartValueBounds.maxY, yAxisCount);
 
             mCalcWidth = mChartRect.left + mChartRect.width() + mChartMargin * 2;
+            mCalcItemHeight = mChartRect.height() / mYAxis.getAxisScale().getCount();
+        }
 
+        @Override
+        public String toString() {
+            return "{" +
+                    "CalcWidth=" + mCalcWidth + ", " +
+                    "CalcItemHeight=" + mCalcItemHeight + ", " +
+                    "ChartMargin=" + mChartMargin + ", " +
+                    "ChartTextMargin=" + mChartTextMargin + ", " +
+                    "BarItemWidth=" + mBarItemWidth + ", " +
+                    "AxisMarkSize=" + mAxisMarkSize + ", " +
+                    "ChartRect=" + mChartRect + ", " +
+                    "XAxis=" + mXAxis + ", " +
+                    "YAxis=" + mYAxis + ", " +
+                    "IsLayoutValid=" + mIsLayoutValid
+                    ;
         }
     }
 
@@ -538,12 +580,10 @@ public class BarChart extends View {
 
         mChartLayout.updateLayout(widthWithoutPadding, heigthWithoutPadding, getResources().getDisplayMetrics(), mSeriesList);
         Log.d("BarChart", "size without padding (" + widthWithoutPadding + ", " + heigthWithoutPadding + ")");
-        Log.d("BarChart", "ChartLayout.XAxis=" + mChartLayout.getXAxis());
 
         int newWidth = mChartLayout.getCalcWidth() + getPaddingLeft() + getPaddingRight();
-
         setMeasuredDimension(newWidth, height);
-        Log.d("BarChart", "Width=" + width + ", newWidth=" + newWidth);
+        Log.d("BarChart", "ChartLayout" + mChartLayout);
     }
 
     @Override
@@ -552,6 +592,7 @@ public class BarChart extends View {
 
         final int width = getWidth();
         final int height = getHeight();
+        final Rect chartRect = mChartLayout.getChartRect();
 
         canvas.drawRect(0, 0, width, height, mAxesPaint);
         //canvas.drawRect(mChartLayout.getChartRect(), mAxesPaint);
@@ -559,12 +600,50 @@ public class BarChart extends View {
         //argument axis
         int axisItemWidth = mChartLayout.getBarItemWidth();
         int axisMarkSize = mChartLayout.getAxisMarkSize();
-        int x = mChartLayout.getChartRect().left;
-        for (int i = 0; i <= mChartLayout.getXAxis().getAxisScale().getMaxValue(); i ++) {
-            Log.d("BarChart", "x=" + x);
-            canvas.drawLine(x, mChartLayout.getChartRect().bottom - axisMarkSize, x, mChartLayout.getChartRect().bottom + axisMarkSize,  mAxesPaint);
+        int x = chartRect.left + mChartLayout.getBarItemWidth() / 2;
+        Series series = null;
+        if (mSeriesList.size() > 0)
+            series = mSeriesList.get(0);
+
+        for (int i = 0; i < mChartLayout.getXAxis().getAxisScale().getMaxValue(); i++) {
+            //draw mark
+            canvas.drawLine(x, chartRect.bottom - axisMarkSize, x, chartRect.bottom + axisMarkSize,  mAxesPaint);
+
+            //draw value
+            if (series != null) {
+                String labelText = series.get(i).xLabel;
+                float textMeasure = mAxesTextPaint.measureText(labelText, 0, labelText.length());
+
+                //handling of long labels
+                int textLength = labelText.length();
+                if (textMeasure > mChartLayout.getBarItemWidth()) {
+                    //need to truncate text size
+                    double textRate = textLength * mChartLayout.getBarItemWidth() / textMeasure;
+                    labelText = labelText.substring(0, (int)textRate);
+                    textMeasure = mChartLayout.getBarItemWidth();
+                }
+
+                canvas.drawText(labelText, x - textMeasure / 2, chartRect.bottom + mChartLayout.getChartTextMargin() + mAxesTextPaint.getTextSize(), mAxesTextPaint);
+            }
+
+            //next step
             x += axisItemWidth;
         }
-        canvas.drawLine(mChartLayout.getChartRect().left, mChartLayout.getChartRect().bottom, mChartLayout.getChartRect().right, mChartLayout.getChartRect().bottom,  mAxesPaint);
+        canvas.drawLine(chartRect.left, chartRect.bottom, chartRect.right, chartRect.bottom,  mAxesPaint);
+
+        //value axis
+        canvas.drawLine(chartRect.left, chartRect.top, chartRect.left, chartRect.bottom, mAxesPaint);
+        int axisItemHeight = mChartLayout.getItemHeight();
+        int y = chartRect.bottom;
+        double axisValueStep = mChartLayout.getYAxis().getAxisScale().getMaxValue() / mChartLayout.getYAxis().getAxisScale().getCount();
+        double axisValue = 0d;
+        for (int i = 0; i <= mChartLayout.getYAxis().getAxisScale().getCount(); i++) {
+            canvas.drawLine(chartRect.left - axisMarkSize, y, chartRect.left + axisMarkSize, y, mAxesPaint);
+            String labelText = ChartValueFormatter.formatValue(axisValue);
+            float textMeasure = mAxesTextPaint.measureText(labelText, 0, labelText.length());
+            canvas.drawText(labelText, chartRect.left - mChartLayout.getAxisMarkSize() - textMeasure, y + mChartLayout.getAxesTextSymbolBounds().height() / 2, mAxesTextPaint);
+            y -= axisItemHeight;
+            axisValue += axisValueStep;
+        }
     }
 }

@@ -60,9 +60,9 @@ public class MainActivity extends Activity {
 
         final BarChart barChart = (BarChart) findViewById(R.id.barChart1);
         BarChart.Series series =  barChart.addSeries();
-        series.addXY(1d, "Item 1", 2d);
+        series.addXY(1d, "Item 1 has very bit length and needs to be truncated", 2d);
         series.addXY(2d, "Item 2", 1d);
-        series.addXY(3d, "Item 3", 5d);
+        series.addXY(3d, "Item 3", 4d);
         barChart.updateSeriesListValueBounds();
         Log.d("BarChart", "AfterSeriesAdded");
 	};

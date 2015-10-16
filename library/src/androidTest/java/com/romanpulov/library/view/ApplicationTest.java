@@ -3,6 +3,7 @@ package com.romanpulov.library.view;
 import android.app.Application;
 import android.graphics.Paint;
 import android.test.ApplicationTestCase;
+import android.util.DisplayMetrics;
 import android.util.Log;
 
 /**
@@ -35,12 +36,21 @@ public class ApplicationTest extends ApplicationTestCase<Application> {
         BarChart.ChartLayout cl = new BarChart.ChartLayout();
         cl.setAxesTextPaint(paint);
         int width = 0;
-        int height = 70;
+        int height = 160;
 
-        cl.updateLayout(width, height, seriesList);
+        DisplayMetrics dm = new DisplayMetrics();
+        assertNotNull(dm);
+
+        cl.updateLayout(width, height, dm, seriesList);
         Log.d("ApplicationTest", "ChartRect = " + cl.getChartRect() + " IsLayoutValid = " + cl.getLayoutValid());
         Log.d("ApplicationTest", "xAxis = " + cl.getXAxis());
         Log.d("ApplicationTest", "yAxis = " + cl.getYAxis());
+
+        cl.updateLayout(width, height, dm, seriesList);
+        Log.d("ApplicationTest", "ChartRect = " + cl.getChartRect() + " IsLayoutValid = " + cl.getLayoutValid());
+        Log.d("ApplicationTest", "xAxis = " + cl.getXAxis());
+        Log.d("ApplicationTest", "yAxis = " + cl.getYAxis());
+
     }
 
 
