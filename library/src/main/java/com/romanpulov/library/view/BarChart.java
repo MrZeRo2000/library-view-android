@@ -5,6 +5,7 @@ import android.graphics.Canvas;
 import android.graphics.Paint;
 import android.graphics.Rect;
 import android.util.AttributeSet;
+import android.util.DisplayMetrics;
 import android.util.Log;
 import android.util.TypedValue;
 import android.view.View;
@@ -19,9 +20,6 @@ import java.util.Locale;
  */
 
 public class BarChart extends View {
-
-    private static int AXES_PADDING = 30;
-    private static int BAR_ITEM_WIDTH = 30;
 
     private ChartLayout mChartLayout;
 
@@ -386,16 +384,24 @@ public class BarChart extends View {
 
     public static class ChartLayout {
         //general margin
-        static final int CHART_MARGIN = 5;
-        static final int CHART_TEXT_MARGIN = 2;
+        private static final int CHART_MARGIN = 5;
+        private static final int CHART_TEXT_MARGIN = 2;
+        private static final int BAR_ITEM_WIDTH = 100;
+        private static final int AXIS_MARK_SIZE = 5;
 
         private Paint mAxesTextPaint;
         private Rect mAxesTextSymbolBounds = new Rect();
         //input data
         private int mWidth;
         private int mHeight;
+        private DisplayMetrics mDisplayMetrics;
         private SeriesList mSeriesList;
         //calculated
+        private int mCalcWidth;
+        private int mChartMargin;
+        private int mChartTextMargin;
+        private int mBarItemWidth;
+        private int mAxisMarkSize;
         private Rect mChartRect = new Rect();
         private ChartAxis mXAxis = new ChartAxis(ChartAxis.AXIS_TYPE_ARGUMENT);
         private ChartAxis mYAxis = new ChartAxis(ChartAxis.AXIS_TYPE_VALUE);
@@ -403,6 +409,26 @@ public class BarChart extends View {
 
         public Rect getChartRect() {
             return mChartRect;
+        }
+
+        public int getChartMargin() {
+            return mChartMargin;
+        }
+
+        public int getChartTextMargin() {
+            return mChartTextMargin;
+        }
+
+        public int getBarItemWidth() {
+            return mBarItemWidth;
+        }
+
+        public int getAxisMarkSize() {
+            return mAxisMarkSize;
+        }
+
+        public int getCalcWidth() {
+            return mCalcWidth;
         }
 
         public ChartAxis getXAxis() {
@@ -422,34 +448,51 @@ public class BarChart extends View {
             mAxesTextPaint.getTextBounds("0", 0, 1, mAxesTextSymbolBounds);
         }
 
-        public void updateLayout(int width, int height, SeriesList seriesList) {
+        public void updateLayout(int width, int height, DisplayMetrics displayMetrics, SeriesList seriesList) {
             mWidth = width;
             mHeight = height;
+            mDisplayMetrics = displayMetrics;
             mSeriesList = seriesList;
+            calcLayoutConstant();
             calcLayout();
 
-            mIsLayoutValid = mChartRect.height() > 3 * (mAxesTextSymbolBounds.height() + CHART_TEXT_MARGIN);
+            mIsLayoutValid = mChartRect.height() > 3 * (mAxesTextSymbolBounds.height() + mChartMargin);
+        }
+
+        public int dpToDIP(double value) {
+            return (int)TypedValue.applyDimension(TypedValue.COMPLEX_UNIT_DIP, (float)value, mDisplayMetrics);
+        }
+
+        private void calcLayoutConstant() {
+            mChartMargin = dpToDIP(CHART_MARGIN);
+            mChartTextMargin = dpToDIP(CHART_TEXT_MARGIN);
+            mBarItemWidth = dpToDIP(BAR_ITEM_WIDTH);
+            mAxisMarkSize = dpToDIP(AXIS_MARK_SIZE);
         }
 
         private void calcLayout() {
             //chart body rect
-            mChartRect.top = CHART_MARGIN;
+            mChartRect.top = mChartMargin;
             //  ensure bounds are calculated
             mSeriesList.updateValueBounds();
             //  calc according to bounds
             ChartValueBounds chartValueBounds = mSeriesList.getValueBounds();
             double maxY = chartValueBounds.maxY;
             String displayMaxY = ValueFormatter.formatValue(maxY);
-            mChartRect.left = CHART_MARGIN + mAxesTextSymbolBounds.width() * displayMaxY.length();
-            mChartRect.right = mWidth - CHART_MARGIN;
-            mChartRect.bottom = mHeight - 2 * (mAxesTextSymbolBounds.height() + CHART_TEXT_MARGIN);
+            mChartRect.left = mChartMargin + mAxesTextSymbolBounds.width() * displayMaxY.length();
+            //mChartRect.right = mWidth - mChartMargin - mBarItemWidth / 2;
+            mChartRect.right = (int)(mChartRect.left + getXAxis().getAxisScale().getMaxValue() * mBarItemWidth + mBarItemWidth / 2);
+            mChartRect.bottom = mHeight - 2 * (mAxesTextSymbolBounds.height() + mChartTextMargin) - mChartMargin - mChartMargin;
 
             //axes
             mXAxis.setRange(0, chartValueBounds.maxX, (int)chartValueBounds.maxX);
-            int yAxisCount = mHeight / (mAxesTextSymbolBounds.height() * 2);
+            int yAxisCount = (mHeight - mChartMargin - mChartMargin) / ((mAxesTextSymbolBounds.height() + + mChartTextMargin) * 2);
             if (yAxisCount < 1)
                 yAxisCount = 1;
             mYAxis.setRange(0, chartValueBounds.maxY, yAxisCount);
+
+            mCalcWidth = mChartRect.left + mChartRect.width() + mChartMargin * 2;
+
         }
     }
 
@@ -466,6 +509,10 @@ public class BarChart extends View {
 
         mChartLayout = new ChartLayout();
         mChartLayout.setAxesTextPaint(mAxesPaint);
+    }
+
+    public void updateSeriesListValueBounds() {
+        mSeriesList.updateValueBounds();
     }
 
     @Override
@@ -489,17 +536,14 @@ public class BarChart extends View {
         int widthWithoutPadding = width - getPaddingLeft() - getPaddingRight();
         int heigthWithoutPadding = height - getPaddingTop() - getPaddingBottom();
 
-        mSeriesList.updateValueBounds();
-        mChartLayout.updateLayout(widthWithoutPadding, heigthWithoutPadding, mSeriesList);
+        mChartLayout.updateLayout(widthWithoutPadding, heigthWithoutPadding, getResources().getDisplayMetrics(), mSeriesList);
         Log.d("BarChart", "size without padding (" + widthWithoutPadding + ", " + heigthWithoutPadding + ")");
         Log.d("BarChart", "ChartLayout.XAxis=" + mChartLayout.getXAxis());
 
+        int newWidth = mChartLayout.getCalcWidth() + getPaddingLeft() + getPaddingRight();
 
-        //mChartLayout.getXAxis().getAxisScale().getMaxValue()
-        int newWidth = (int)TypedValue.applyDimension(TypedValue.COMPLEX_UNIT_DIP, (float)(BAR_ITEM_WIDTH * mChartLayout.getXAxis().getAxisScale().getMaxValue()), getResources().getDisplayMetrics());
-
-        setMeasuredDimension(newWidth + getPaddingLeft() + getPaddingRight(), height);
-        Log.d("BarChart", "Width=" + width + ", newWidth=" + newWidth + getPaddingLeft() + getPaddingRight());
+        setMeasuredDimension(newWidth, height);
+        Log.d("BarChart", "Width=" + width + ", newWidth=" + newWidth);
     }
 
     @Override
@@ -509,17 +553,18 @@ public class BarChart extends View {
         final int width = getWidth();
         final int height = getHeight();
 
-        Rect axesTextBounds = new Rect();
-        mAxesPaint.getTextBounds("00000", 0, 4, axesTextBounds);
+        canvas.drawRect(0, 0, width, height, mAxesPaint);
+        //canvas.drawRect(mChartLayout.getChartRect(), mAxesPaint);
 
-        int offsetLeft = axesTextBounds.width();
-        int offsetTop = axesTextBounds.height() / 2;
-        int offsetBottom = 2 * axesTextBounds.height();
-        int offsetRight  = axesTextBounds.height() / 2;
-
-        Rect chartBounds = new Rect(offsetLeft, offsetTop, width - offsetRight, height - offsetBottom);
-        canvas.drawRect(chartBounds, mAxesPaint);
-
-        canvas.drawText(toString(), 0, 0, mAxesTextPaint);
+        //argument axis
+        int axisItemWidth = mChartLayout.getBarItemWidth();
+        int axisMarkSize = mChartLayout.getAxisMarkSize();
+        int x = mChartLayout.getChartRect().left;
+        for (int i = 0; i <= mChartLayout.getXAxis().getAxisScale().getMaxValue(); i ++) {
+            Log.d("BarChart", "x=" + x);
+            canvas.drawLine(x, mChartLayout.getChartRect().bottom - axisMarkSize, x, mChartLayout.getChartRect().bottom + axisMarkSize,  mAxesPaint);
+            x += axisItemWidth;
+        }
+        canvas.drawLine(mChartLayout.getChartRect().left, mChartLayout.getChartRect().bottom, mChartLayout.getChartRect().right, mChartLayout.getChartRect().bottom,  mAxesPaint);
     }
 }

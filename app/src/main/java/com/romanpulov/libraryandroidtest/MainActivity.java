@@ -63,7 +63,7 @@ public class MainActivity extends Activity {
         series.addXY(1d, "Item 1", 2d);
         series.addXY(2d, "Item 2", 1d);
         series.addXY(3d, "Item 3", 5d);
-        series.updateValueBounds();
+        barChart.updateSeriesListValueBounds();
         Log.d("BarChart", "AfterSeriesAdded");
 	};
 
