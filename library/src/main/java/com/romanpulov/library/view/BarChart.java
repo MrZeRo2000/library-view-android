@@ -26,6 +26,7 @@ import java.util.Locale;
 public class BarChart extends View {
 
     private ChartLayout mChartLayout;
+    private ChartDrawLayout mChartDrawLayout;
 
     private Paint mAxesPaint;
     private Paint mAxesTextPaint;
@@ -560,6 +561,10 @@ public class BarChart extends View {
 
         mChartLayout = new ChartLayout();
         mChartLayout.setAxesTextPaint(mAxesPaint);
+
+        mChartDrawLayout = new ChartDrawLayout(mChartLayout);
+        mChartDrawLayout.setAxesTextPaint(mAxesTextPaint);
+        mChartDrawLayout.setAxesPaint(mAxesPaint);
     }
 
     public void updateSeriesListValueBounds() {
@@ -569,7 +574,13 @@ public class BarChart extends View {
     @Override
     protected void onSizeChanged(int w, int h, int oldw, int oldh) {
         super.onSizeChanged(w, h, oldw, oldh);
-        Log.d("BarChart", "onSizeChanged");
+        Log.d("BarChart", "onSizeChanged (" + w + ", " + h + ")");
+
+        Series series = null;
+        if (mSeriesList.size() > 0)
+            series = mSeriesList.get(0);
+        mChartDrawLayout.updateLayout(series);
+
         /*
         mSeriesList.updateValueBounds();
         mChartLayout.updateLayout(w, h, mSeriesList);
@@ -596,16 +607,165 @@ public class BarChart extends View {
         Log.d("BarChart", "ChartLayout" + mChartLayout);
     }
 
+    public static class ArgumentDrawData {
+        public float markX;
+        public float markY0;
+        public float markY;
+        public float labelX;
+        public float labelY;
+        public String labelText;
+        public Shader barShader;
+        public float barX0;
+        public float barY0;
+        public float barX;
+        public float barY;
+    }
+
+    public static class ValueDrawData {
+        public float markX0;
+        public float markX;
+        public float markY;
+        public float labelX;
+        public float labelY;
+        public String labelText;
+    }
+
+    private static class ChartDrawLayout {
+        private ChartLayout mChartLayout;
+        private List<ArgumentDrawData> mArgumentDrawDataList;
+        private List<ValueDrawData> mValueDrawDataList;
+
+        private Paint mAxesPaint;
+        private Paint mAxesTextPaint;
+
+        public void setAxesPaint(Paint axesPaint) {
+            mAxesPaint = axesPaint;
+        }
+
+        public void setAxesTextPaint(Paint axesTextPaint) {
+            mAxesTextPaint = axesTextPaint;
+        }
+
+        public List<ArgumentDrawData> getArgumentDrawDataList() {
+            return mArgumentDrawDataList;
+        }
+
+        public List<ValueDrawData> getValueDrawDataList() {
+            return mValueDrawDataList;
+        }
+
+        public ChartDrawLayout(ChartLayout chartLayout) {
+            mChartLayout = chartLayout;
+        }
+
+        public void updateLayout(Series series) {
+            updateArgumentLayout(series);
+            updateValueLayout();
+        }
+
+        public void updateValueLayout() {
+            final Rect chartRect = mChartLayout.getChartRect();
+            int axisMarkSize = mChartLayout.getAxisMarkSize();
+
+            int axisItemHeight = mChartLayout.getItemHeight();
+            int y = chartRect.bottom;
+            double axisValueStep = mChartLayout.getYAxis().getAxisScale().getMaxValue() / mChartLayout.getYAxis().getAxisScale().getCount();
+            double axisValue = 0d;
+            for (int i = 0; i <= mChartLayout.getYAxis().getAxisScale().getCount(); i++) {
+                //lazy list creation
+                if (mValueDrawDataList == null)
+                    mValueDrawDataList = new ArrayList<ValueDrawData>(mChartLayout.getYAxis().getAxisScale().getCount());
+                else
+                    mValueDrawDataList.clear();
+
+                ValueDrawData valueDrawData = new ValueDrawData();
+
+                valueDrawData.markX0 = chartRect.left - axisMarkSize;
+                valueDrawData.markX = chartRect.left + axisMarkSize;
+                valueDrawData.markY = y;
+                valueDrawData.labelText = ChartValueFormatter.formatValue(axisValue);
+
+                float textMeasure = mAxesTextPaint.measureText(valueDrawData.labelText, 0, valueDrawData.labelText.length());
+                valueDrawData.labelX = chartRect.left - mChartLayout.getAxisMarkSize() - textMeasure;
+                valueDrawData.labelY = y + mChartLayout.getAxesTextSymbolBounds().height() / 2;
+
+                mValueDrawDataList.add(valueDrawData);
+
+                y -= axisItemHeight;
+                axisValue += axisValueStep;
+            }
+        }
+
+        public void updateArgumentLayout(Series series) {
+            final Rect chartRect = mChartLayout.getChartRect();
+
+            //argument axis
+            int axisItemWidth = mChartLayout.getBarItemWidth();
+            int axisMarkSize = mChartLayout.getAxisMarkSize();
+            int x = chartRect.left + mChartLayout.getBarItemWidth() / 2;
+
+            for (int i = 0; i < mChartLayout.getXAxis().getAxisScale().getMaxValue(); i++) {
+                //lazy list creation
+                if (mArgumentDrawDataList == null) {
+                    mArgumentDrawDataList = new ArrayList<ArgumentDrawData>((int)mChartLayout.getXAxis().getAxisScale().getMaxValue());
+                } else {
+                    mArgumentDrawDataList.clear();
+                }
+                ArgumentDrawData argumentDrawData = new ArgumentDrawData();
+
+                //draw mark
+                argumentDrawData.markX = x;
+                argumentDrawData.markY0 = chartRect.bottom - axisMarkSize;
+                argumentDrawData.markY = chartRect.bottom + axisMarkSize;
+
+                //draw label
+                if (series != null) {
+                    String labelText = series.get(i).xLabel;
+                    float textMeasure = mAxesTextPaint.measureText(labelText, 0, labelText.length());
+
+                    //handling of long labels
+                    int textLength = labelText.length();
+                    if (textMeasure > mChartLayout.getBarItemWidth()) {
+                        //need to truncate text size
+                        double textRate = textLength * mChartLayout.getBarItemWidth() / textMeasure;
+                        labelText = labelText.substring(0, (int)textRate);
+                        textMeasure = mChartLayout.getBarItemWidth();
+                    }
+
+                    argumentDrawData.labelX = x - textMeasure / 2;
+                    argumentDrawData.labelY = chartRect.bottom + mChartLayout.getChartTextMargin() + mAxesTextPaint.getTextSize();
+                    argumentDrawData.labelText = labelText;
+                }
+
+                //bar
+                double barHeight = series.get(i).y * chartRect.height() / mChartLayout.getYAxis().getAxisScale().getMaxValue();
+                argumentDrawData.barX0 = x - mChartLayout.getBarItemWidth() / 4;
+                argumentDrawData.barY0 = (float) (chartRect.bottom - barHeight);
+                argumentDrawData.barX = x + mChartLayout.getBarItemWidth() / 4;
+                argumentDrawData.barY = chartRect.bottom + 1;
+                argumentDrawData.barShader = new LinearGradient(argumentDrawData.barX0, argumentDrawData.barY0, argumentDrawData.barX, argumentDrawData.barY, 0xffbfff00, 0xff003300, Shader.TileMode.CLAMP);
+
+                //add to list
+                mArgumentDrawDataList.add(argumentDrawData);
+
+                //next step
+                x += axisItemWidth;
+            }
+        }
+    }
+
     @Override
     protected void onDraw(Canvas canvas) {
         super.onDraw(canvas);
+        Log.d("BarChart", "onDraw");
 
+        /*
         final int width = getWidth();
         final int height = getHeight();
-        final Rect chartRect = mChartLayout.getChartRect();
-
         canvas.drawRect(0, 0, width, height, mAxesPaint);
-        //canvas.drawRect(mChartLayout.getChartRect(), mAxesPaint);
+        */
+
+        final Rect chartRect = mChartLayout.getChartRect();
 
         //argument axis
         int axisItemWidth = mChartLayout.getBarItemWidth();
