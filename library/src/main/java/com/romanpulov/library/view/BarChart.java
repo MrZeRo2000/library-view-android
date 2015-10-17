@@ -2,8 +2,11 @@ package com.romanpulov.library.view;
 
 import android.content.Context;
 import android.graphics.Canvas;
+import android.graphics.Color;
+import android.graphics.LinearGradient;
 import android.graphics.Paint;
 import android.graphics.Rect;
+import android.graphics.Shader;
 import android.util.AttributeSet;
 import android.util.DisplayMetrics;
 import android.util.Log;
@@ -26,6 +29,9 @@ public class BarChart extends View {
 
     private Paint mAxesPaint;
     private Paint mAxesTextPaint;
+    private Paint mBarPaint;
+
+    private Shader mBarShader;
 
     private SeriesList mSeriesList = new SeriesList();
 
@@ -113,7 +119,7 @@ public class BarChart extends View {
         }
 
         @Override
-        public Iterator iterator() {
+        public Iterator<Series> iterator() {
             return mData.iterator();
         }
     }
@@ -343,7 +349,7 @@ public class BarChart extends View {
                 mCount = maxCount;
                 if (mScaleFactor == 2)
                     mScaleFactor = 5;
-                mMaxValue = (int)(mValue / maxCount);
+                mMaxValue = mValue / maxCount;
                 mMaxValue = (mMaxValue - (mMaxValue % mScaleFactor) + mScaleFactor) * mCount;
             }
         }
@@ -548,6 +554,9 @@ public class BarChart extends View {
         mAxesPaint = new Paint();
         mAxesPaint.setStyle(Paint.Style.STROKE);
         mAxesTextPaint = new Paint();
+        mBarPaint = new Paint();
+
+        mBarShader = new LinearGradient(0, 0, 0, 100, 0xffbfff00, 0xff003300, Shader.TileMode.MIRROR);
 
         mChartLayout = new ChartLayout();
         mChartLayout.setAxesTextPaint(mAxesPaint);
@@ -560,6 +569,7 @@ public class BarChart extends View {
     @Override
     protected void onSizeChanged(int w, int h, int oldw, int oldh) {
         super.onSizeChanged(w, h, oldw, oldh);
+        Log.d("BarChart", "onSizeChanged");
         /*
         mSeriesList.updateValueBounds();
         mChartLayout.updateLayout(w, h, mSeriesList);
@@ -609,7 +619,7 @@ public class BarChart extends View {
             //draw mark
             canvas.drawLine(x, chartRect.bottom - axisMarkSize, x, chartRect.bottom + axisMarkSize,  mAxesPaint);
 
-            //draw value
+            //draw label
             if (series != null) {
                 String labelText = series.get(i).xLabel;
                 float textMeasure = mAxesTextPaint.measureText(labelText, 0, labelText.length());
@@ -625,6 +635,16 @@ public class BarChart extends View {
 
                 canvas.drawText(labelText, x - textMeasure / 2, chartRect.bottom + mChartLayout.getChartTextMargin() + mAxesTextPaint.getTextSize(), mAxesTextPaint);
             }
+
+            //draw bar
+            double barHeight = series.get(i).y * chartRect.height() / mChartLayout.getYAxis().getAxisScale().getMaxValue();
+            mBarPaint.setShader(new LinearGradient(x - mChartLayout.getBarItemWidth() / 4, (float) (chartRect.bottom - barHeight), x - mChartLayout.getBarItemWidth() / 4, chartRect.bottom + 1, 0xffbfff00, 0xff003300, Shader.TileMode.CLAMP));
+            mBarPaint.setStyle(Paint.Style.FILL);
+            canvas.drawRect(x - mChartLayout.getBarItemWidth() / 4, (float) (chartRect.bottom - barHeight), x + mChartLayout.getBarItemWidth() / 4, chartRect.bottom + 1, mBarPaint);
+            mBarPaint.setStyle(Paint.Style.STROKE);
+            //mBarPaint.setColor(Color.BLACK);
+            //mBarPaint.setShader(null);
+            canvas.drawRect(x - mChartLayout.getBarItemWidth() / 4, (float) (chartRect.bottom - barHeight), x + mChartLayout.getBarItemWidth() / 4, chartRect.bottom + 1, mBarPaint);
 
             //next step
             x += axisItemWidth;
