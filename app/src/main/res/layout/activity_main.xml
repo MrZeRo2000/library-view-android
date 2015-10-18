@@ -86,11 +86,27 @@
         android:layout_below="@+id/progressCircle1"
         android:max="140"
         />
+    <Button
+        android:id="@+id/setChartValuesButton"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_below="@id/seekBar1"
+        android:text="Set Chart Values"
+        />
+    <Button
+        android:id="@+id/resetChartValuesButton"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_toRightOf="@id/setChartValuesButton"
+        android:layout_alignTop="@id/setChartValuesButton"
+        android:text="Reset Chart Values"
+        />
+
     <com.romanpulov.library.view.BarChart
         android:id="@+id/barChart1"
         android:layout_width="200dp"
         android:layout_height="200dp"
-        android:layout_below="@+id/seekBar1"
+        android:layout_below="@+id/setChartValuesButton"
         />
 
 </RelativeLayout>

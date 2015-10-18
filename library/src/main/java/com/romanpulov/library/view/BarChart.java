@@ -7,6 +7,8 @@ import android.graphics.LinearGradient;
 import android.graphics.Paint;
 import android.graphics.Rect;
 import android.graphics.Shader;
+import android.os.Parcel;
+import android.os.Parcelable;
 import android.util.AttributeSet;
 import android.util.DisplayMetrics;
 import android.util.Log;
@@ -44,6 +46,10 @@ public class BarChart extends View {
         return newSeries;
     }
 
+    public void clearSeries() {
+        mSeriesList.clear();
+    }
+
     public static class ChartValueBounds {
         public double minX;
         public double minY;
@@ -77,12 +83,20 @@ public class BarChart extends View {
         }
     }
 
-    public static class SeriesList implements Iterable<Series> {
+    public static class SeriesList implements Parcelable  {
         private List<Series> mData = new ArrayList<>();
-        private ChartValueBounds mValueBounds;        
+        private ChartValueBounds mValueBounds;
+
+        public SeriesList() {
+
+        }
         
         public boolean add(Series series) {
             return mData.add(series);
+        }
+
+        public void clear() {
+            mData.clear();
         }
 
         public Series get(int location) {
@@ -118,9 +132,29 @@ public class BarChart extends View {
         }
 
         @Override
-        public Iterator<Series> iterator() {
-            return mData.iterator();
+        public int describeContents() {
+            return 0;
         }
+
+        @Override
+        public void writeToParcel(Parcel dest, int flags) {
+            dest.writeList(mData);
+        }
+
+        private SeriesList(Parcel in) {
+            mData = in.readArrayList(Series.class.getClassLoader());
+        }
+
+        public static final Parcelable.Creator<SeriesList> CREATOR = new Parcelable.Creator<SeriesList>() {
+            public SeriesList createFromParcel(Parcel in) {
+                return new SeriesList(in);
+            }
+
+            public SeriesList[] newArray(int size) {
+                return new SeriesList[size];
+            }
+        };
+
     }
     
     public static class Series {
@@ -509,20 +543,25 @@ public class BarChart extends View {
             ChartValueBounds chartValueBounds = mSeriesList.getValueBounds();
             double maxY = chartValueBounds.maxY;
             String displayMaxY = ChartValueFormatter.formatValue(maxY);
+
+            //X setting range
+            mXAxis.setRange(0, chartValueBounds.maxX, (int)chartValueBounds.maxX);
+            //calculating according to range
             mChartRect.left = mChartMargin + mAxisMarkSize + mAxesTextSymbolBounds.width() * displayMaxY.length();
-            //mChartRect.right = mWidth - mChartMargin - mBarItemWidth / 2;
             mChartRect.right = (int)(mChartRect.left + getXAxis().getAxisScale().getMaxValue() * mBarItemWidth);
             mChartRect.bottom = mHeight - 2 * (mAxesTextSymbolBounds.height() + mChartTextMargin) - mChartMargin - mChartMargin;
 
-            //axes
-            mXAxis.setRange(0, chartValueBounds.maxX, (int)chartValueBounds.maxX);
+            //Y calculations
             int yAxisCount = (mHeight - mChartMargin - mChartMargin) / ((mAxesTextSymbolBounds.height() + mChartTextMargin) * 2);
             if (yAxisCount < 1)
                 yAxisCount = 1;
-            Log.d("BarChart", "Axis.setRange maxY=" + chartValueBounds.maxY + ", yAxisCount=" + yAxisCount);
             mYAxis.setRange(0, chartValueBounds.maxY, yAxisCount);
+            Log.d("BarChart", "Axis.setRange maxY=" + chartValueBounds.maxY + ", yAxisCount=" + yAxisCount);
 
-            mCalcWidth = mChartRect.left + mChartRect.width() + mChartMargin * 2;
+            if (mChartRect.width() < 1)
+                mCalcWidth = 0;
+            else
+                mCalcWidth = mChartRect.left + mChartRect.width() + mChartMargin * 2;
             mCalcItemHeight = mChartRect.height() / mYAxis.getAxisScale().getCount();
         }
 
@@ -571,11 +610,13 @@ public class BarChart extends View {
     protected void onSizeChanged(int w, int h, int oldw, int oldh) {
         super.onSizeChanged(w, h, oldw, oldh);
         Log.d("BarChart", "onSizeChanged (" + w + ", " + h + ")");
-
+        updateChartLayout();
+        /*
         Series series = null;
         if (mSeriesList.size() > 0)
             series = mSeriesList.get(0);
         mChartDrawLayout.updateLayout(series);
+        */
 
         /*
         mSeriesList.updateValueBounds();
@@ -583,6 +624,22 @@ public class BarChart extends View {
         Log.d("BarChart", "onSizeChanged (" + w + ", " + h + ")");
         Log.d("BarChart", "ChartLayout.XAxis=" + mChartLayout.getXAxis());
         */
+    }
+
+    public void updateChartLayout() {
+        int width = getMeasuredWidth();
+        int height = getMeasuredHeight();
+        int widthWithoutPadding = width - getPaddingLeft() - getPaddingRight();
+        int heigthWithoutPadding = height - getPaddingTop() - getPaddingBottom();
+
+        Log.d("BarChart", "updating layout for (" + widthWithoutPadding + ", " + heigthWithoutPadding + ")");
+        mChartLayout.updateLayout(widthWithoutPadding, heigthWithoutPadding, getResources().getDisplayMetrics(), mSeriesList);
+        Log.d("BarChart", "ChartLayout" + mChartLayout);
+
+        Series series = null;
+        if (mSeriesList.size() > 0)
+            series = mSeriesList.get(0);
+        mChartDrawLayout.updateLayout(series);
     }
 
     @Override
@@ -595,12 +652,11 @@ public class BarChart extends View {
         int widthWithoutPadding = width - getPaddingLeft() - getPaddingRight();
         int heigthWithoutPadding = height - getPaddingTop() - getPaddingBottom();
 
-        mChartLayout.updateLayout(widthWithoutPadding, heigthWithoutPadding, getResources().getDisplayMetrics(), mSeriesList);
         Log.d("BarChart", "size without padding (" + widthWithoutPadding + ", " + heigthWithoutPadding + ")");
-
         int newWidth = mChartLayout.getCalcWidth() + getPaddingLeft() + getPaddingRight();
         setMeasuredDimension(newWidth, height);
-        Log.d("BarChart", "ChartLayout" + mChartLayout);
+        Log.d("BarChart", "Setting measured dimension (" + newWidth + ", " + height + ")");
+
     }
 
     private static class ArgumentDrawData {
@@ -790,5 +846,60 @@ public class BarChart extends View {
         long stopTime = System.nanoTime();
         long elapsedTime = stopTime - startTime;
         Log.d("BarChart", "onDraw executed in " + elapsedTime + " ns");
+    }
+
+    static class SavedState extends BaseSavedState {
+        SeriesList seriesList;
+
+        SavedState(Parcelable superState) {
+            super(superState);
+        }
+
+        private SavedState(Parcel in) {
+            super(in);
+            seriesList = in.readParcelable(SeriesList.class.getClassLoader());
+        }
+
+        @Override
+        public void writeToParcel(Parcel out, int flags) {
+            super.writeToParcel(out, flags);
+            out.writeParcelable(seriesList, 0);
+        }
+
+        public static final Parcelable.Creator<SavedState> CREATOR
+                = new Parcelable.Creator<SavedState>() {
+            public SavedState createFromParcel(Parcel in) {
+                return new SavedState(in);
+            }
+
+            public SavedState[] newArray(int size) {
+                return new SavedState[size];
+            }
+        };
+    }
+
+
+    @Override
+    public Parcelable onSaveInstanceState() {
+        Parcelable superState = super.onSaveInstanceState();
+
+        SavedState ss = new SavedState(superState);
+
+        ss.seriesList = mSeriesList;
+
+        return ss;
+    }
+
+    @Override
+    public void onRestoreInstanceState(Parcelable state) {
+        SavedState ss = (SavedState) state;
+
+        super.onRestoreInstanceState(ss.getSuperState());
+
+        mSeriesList = ss.seriesList;
+        updateSeriesListValueBounds();
+        updateChartLayout();
+
+        requestLayout();
     }
 }
