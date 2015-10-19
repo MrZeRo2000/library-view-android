@@ -199,7 +199,7 @@ public class BarChart extends View {
             return mData;
         }
 
-        public boolean addXY(Double x, String xLabel, Double y) {
+        public boolean addXY(double x, String xLabel, double y) {
             return add(new ChartValue(x, xLabel, y));
         }
 
