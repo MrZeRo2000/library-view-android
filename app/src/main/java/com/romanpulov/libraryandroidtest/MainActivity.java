@@ -67,6 +67,7 @@ public class MainActivity extends Activity {
             public void onClick(View v) {
                 final BarChart barChart = (BarChart) findViewById(R.id.barChart1);
                 BarChart.Series series = barChart.addSeries();
+                series.setGradientColors(0xffbfff00, 0xff003300);
                 series.addXY(1d, "Item 1 has very bit length and needs to be truncated", 2d);
                 series.addXY(2d, "Item 2", 1d);
                 series.addXY(3d, "Item 3", 4d);
@@ -105,6 +106,7 @@ public class MainActivity extends Activity {
                 int maxValue = Integer.valueOf(maxValueText.getText().toString());
 
                 BarChart.Series series = barChart.addSeries();
+                series.setGradientColors(0xffbf00ff, 0xff000033);
 
                 Random rnd = new Random();
 

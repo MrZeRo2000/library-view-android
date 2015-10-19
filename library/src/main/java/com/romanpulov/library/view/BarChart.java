@@ -1,12 +1,14 @@
 package com.romanpulov.library.view;
 
 import android.content.Context;
+import android.content.res.TypedArray;
 import android.graphics.Canvas;
 import android.graphics.Color;
 import android.graphics.LinearGradient;
 import android.graphics.Paint;
 import android.graphics.Rect;
 import android.graphics.Shader;
+import android.graphics.Typeface;
 import android.os.Parcel;
 import android.os.Parcelable;
 import android.util.AttributeSet;
@@ -17,7 +19,6 @@ import android.view.View;
 
 import java.util.ArrayList;
 import java.util.Collections;
-import java.util.Iterator;
 import java.util.List;
 import java.util.Locale;
 
@@ -27,6 +28,11 @@ import java.util.Locale;
 
 public class BarChart extends View {
 
+    public static final int DEFAULT_AXIS_COLOR = Color.BLACK;
+    public static final int DEFAULT_AXIS_WIDTH = 1;
+    public static final int DEFAULT_AXIS_TEXT_COLOR = Color.BLACK;
+    public static final int DEFAULT_AXIS_TEXT_SIZE = 14;
+    public static final int DEFAULT_BAR_COLOR = Color.BLACK;
     private ChartLayout mChartLayout;
     private ChartDrawLayout mChartDrawLayout;
 
@@ -154,11 +160,26 @@ public class BarChart extends View {
                 return new SeriesList[size];
             }
         };
-
     }
     
     public static class Series {
         private List<ChartValue> mData = new ArrayList<>();
+
+        private int mGradientColor0;
+        private int mGradientColor;
+
+        public void setGradientColors(int color0, int color) {
+            mGradientColor0 = color0;
+            mGradientColor = color;
+        }
+
+        public int getGradientColor0() {
+            return mGradientColor0;
+        }
+
+        public int getGradientColor() {
+            return mGradientColor;
+        }
 
         private ChartValueBounds mValueBounds;
 
@@ -202,7 +223,6 @@ public class BarChart extends View {
         public boolean addXY(double x, String xLabel, double y) {
             return add(new ChartValue(x, xLabel, y));
         }
-
     }
 
     public static class ChartValue implements Comparable {
@@ -428,7 +448,10 @@ public class BarChart extends View {
     public static class ChartValueFormatter {
         public static String formatValue(double value) {
             if (value < 10) {
-                return String.format(Locale.getDefault(), "%1.1f", value);
+                if (value - (int)value > 1e-7)
+                    return String.format(Locale.getDefault(), "%1.1f", value);
+                else
+                    return String.format(Locale.getDefault(), "%d", (int)value);
             } else if (value < 1000000) {
                 return String.format(Locale.getDefault(), "%.0f", value);
             } else
@@ -436,8 +459,7 @@ public class BarChart extends View {
         }
     }
 
-
-    public static class ChartLayout {
+    public final static class ChartLayout {
         //general margin
         private static final int CHART_MARGIN = 5;
         private static final int CHART_TEXT_MARGIN = 2;
@@ -547,7 +569,7 @@ public class BarChart extends View {
             //X setting range
             mXAxis.setRange(0, chartValueBounds.maxX, (int)chartValueBounds.maxX);
             //calculating according to range
-            mChartRect.left = mChartMargin + mAxisMarkSize + mAxesTextSymbolBounds.width() * displayMaxY.length();
+            mChartRect.left = mChartMargin + mAxisMarkSize + mAxesTextSymbolBounds.width() * (displayMaxY.length() + 2);
             mChartRect.right = (int)(mChartRect.left + getXAxis().getAxisScale().getMaxValue() * mBarItemWidth);
             mChartRect.bottom = mHeight - 2 * (mAxesTextSymbolBounds.height() + mChartTextMargin) - mChartMargin - mChartMargin;
 
@@ -582,84 +604,7 @@ public class BarChart extends View {
         }
     }
 
-    public BarChart(Context context) {
-        super(context, null);
-    }
-
-    public BarChart(Context context, AttributeSet attrs) {
-        super(context, attrs);
-
-        mAxesPaint = new Paint();
-        mAxesPaint.setStyle(Paint.Style.STROKE);
-        mAxesTextPaint = new Paint();
-        mBarPaint = new Paint();
-
-        mChartLayout = new ChartLayout();
-        mChartLayout.setAxesTextPaint(mAxesPaint);
-
-        mChartDrawLayout = new ChartDrawLayout(mChartLayout);
-        mChartDrawLayout.setAxesTextPaint(mAxesTextPaint);
-        mChartDrawLayout.setGradientColors(0xffbf00ff, 0xff000033);
-    }
-
-    public void updateSeriesListValueBounds() {
-        mSeriesList.updateValueBounds();
-    }
-
-    @Override
-    protected void onSizeChanged(int w, int h, int oldw, int oldh) {
-        super.onSizeChanged(w, h, oldw, oldh);
-        Log.d("BarChart", "onSizeChanged (" + w + ", " + h + ")");
-        updateChartLayout();
-        /*
-        Series series = null;
-        if (mSeriesList.size() > 0)
-            series = mSeriesList.get(0);
-        mChartDrawLayout.updateLayout(series);
-        */
-
-        /*
-        mSeriesList.updateValueBounds();
-        mChartLayout.updateLayout(w, h, mSeriesList);
-        Log.d("BarChart", "onSizeChanged (" + w + ", " + h + ")");
-        Log.d("BarChart", "ChartLayout.XAxis=" + mChartLayout.getXAxis());
-        */
-    }
-
-    public void updateChartLayout() {
-        int width = getMeasuredWidth();
-        int height = getMeasuredHeight();
-        int widthWithoutPadding = width - getPaddingLeft() - getPaddingRight();
-        int heigthWithoutPadding = height - getPaddingTop() - getPaddingBottom();
-
-        Log.d("BarChart", "updating layout for (" + widthWithoutPadding + ", " + heigthWithoutPadding + ")");
-        mChartLayout.updateLayout(widthWithoutPadding, heigthWithoutPadding, getResources().getDisplayMetrics(), mSeriesList);
-        Log.d("BarChart", "ChartLayout" + mChartLayout);
-
-        Series series = null;
-        if (mSeriesList.size() > 0)
-            series = mSeriesList.get(0);
-        mChartDrawLayout.updateLayout(series);
-    }
-
-    @Override
-    protected void onMeasure(int widthMeasureSpec, int heightMeasureSpec) {
-        super.onMeasure(widthMeasureSpec, heightMeasureSpec);
-        Log.d("BarChart", "onMeasure");
-
-        int width = getMeasuredWidth();
-        int height = getMeasuredHeight();
-        int widthWithoutPadding = width - getPaddingLeft() - getPaddingRight();
-        int heigthWithoutPadding = height - getPaddingTop() - getPaddingBottom();
-
-        Log.d("BarChart", "size without padding (" + widthWithoutPadding + ", " + heigthWithoutPadding + ")");
-        int newWidth = mChartLayout.getCalcWidth() + getPaddingLeft() + getPaddingRight();
-        setMeasuredDimension(newWidth, height);
-        Log.d("BarChart", "Setting measured dimension (" + newWidth + ", " + height + ")");
-
-    }
-
-    private static class ArgumentDrawData {
+    private final static class ArgumentDrawData {
         float markX;
         float markY0;
         float markY;
@@ -673,7 +618,7 @@ public class BarChart extends View {
         float barY;
     }
 
-    private static class ValueDrawData {
+    private final static class ValueDrawData {
         float markX0;
         float markX;
         float markY;
@@ -682,21 +627,15 @@ public class BarChart extends View {
         String labelText;
     }
 
-    private static class ChartDrawLayout {
+    private final static class ChartDrawLayout {
         private ChartLayout mChartLayout;
         private List<ArgumentDrawData> mArgumentDrawDataList;
         private List<ValueDrawData> mValueDrawDataList;
 
         private Paint mAxesTextPaint;
-        private int mGradientColor0;
-        private int mGradientColor;
 
         public void setAxesTextPaint(Paint axesTextPaint) {
             mAxesTextPaint = axesTextPaint;
-        }
-        public void setGradientColors(int color0, int color) {
-            mGradientColor0 = color0;
-            mGradientColor = color;
         }
 
         public List<ArgumentDrawData> getArgumentDrawDataList() {
@@ -798,7 +737,7 @@ public class BarChart extends View {
                 argumentDrawData.barY = chartRect.bottom + 1;
                 argumentDrawData.barShader = new LinearGradient(
                         argumentDrawData.barX0, argumentDrawData.barY0, argumentDrawData.barX0, argumentDrawData.barY,
-                        mGradientColor0, mGradientColor,
+                        series.getGradientColor0(), series.getGradientColor(),
                         Shader.TileMode.CLAMP);
 
                 //add to list
@@ -808,6 +747,78 @@ public class BarChart extends View {
                 x += axisItemWidth;
             }
         }
+    }
+
+    public BarChart(Context context) {
+        super(context, null);
+    }
+
+    public BarChart(Context context, AttributeSet attrs) {
+        super(context, attrs);
+
+        mAxesPaint = new Paint();
+        mAxesPaint.setStyle(Paint.Style.STROKE);
+        mAxesTextPaint = new Paint();
+        mBarPaint = new Paint();
+
+        //read resources
+        TypedArray a = context.obtainStyledAttributes(attrs, R.styleable.BarChart);
+        mAxesPaint.setColor(a.getColor(R.styleable.BarChart_axisColor, DEFAULT_AXIS_COLOR));
+        mAxesPaint.setStrokeWidth(a.getDimensionPixelOffset(R.styleable.BarChart_axisWidth, (int) (DEFAULT_AXIS_WIDTH * getResources().getDisplayMetrics().density)));
+        mAxesTextPaint.setColor(a.getColor(R.styleable.BarChart_textColor, DEFAULT_AXIS_TEXT_COLOR));
+        mAxesTextPaint.setTextSize(a.getDimensionPixelSize(R.styleable.BarChart_textSize, DEFAULT_AXIS_TEXT_SIZE) * getResources().getDisplayMetrics().density);
+        Typeface tf = Typeface.create("", a.getInt(R.styleable.BarChart_textStyle, Typeface.NORMAL));
+        mAxesTextPaint.setTypeface(tf);
+        mBarPaint.setColor(a.getColor(R.styleable.BarChart_barColor, DEFAULT_BAR_COLOR));
+        a.recycle();
+
+        mChartLayout = new ChartLayout();
+        mChartLayout.setAxesTextPaint(mAxesTextPaint);
+        mChartDrawLayout = new ChartDrawLayout(mChartLayout);
+        mChartDrawLayout.setAxesTextPaint(mAxesTextPaint);
+    }
+
+    public void updateSeriesListValueBounds() {
+        mSeriesList.updateValueBounds();
+    }
+
+    @Override
+    protected void onSizeChanged(int w, int h, int oldw, int oldh) {
+        super.onSizeChanged(w, h, oldw, oldh);
+        Log.d("BarChart", "onSizeChanged (" + w + ", " + h + ")");
+        updateChartLayout();
+    }
+
+    public void updateChartLayout() {
+        int width = getMeasuredWidth();
+        int height = getMeasuredHeight();
+        int widthWithoutPadding = width - getPaddingLeft() - getPaddingRight();
+        int heigthWithoutPadding = height - getPaddingTop() - getPaddingBottom();
+
+        Log.d("BarChart", "updating layout for (" + widthWithoutPadding + ", " + heigthWithoutPadding + ")");
+        mChartLayout.updateLayout(widthWithoutPadding, heigthWithoutPadding, getResources().getDisplayMetrics(), mSeriesList);
+        Log.d("BarChart", "ChartLayout" + mChartLayout);
+
+        Series series = null;
+        if (mSeriesList.size() > 0)
+            series = mSeriesList.get(0);
+        mChartDrawLayout.updateLayout(series);
+    }
+
+    @Override
+    protected void onMeasure(int widthMeasureSpec, int heightMeasureSpec) {
+        super.onMeasure(widthMeasureSpec, heightMeasureSpec);
+        Log.d("BarChart", "onMeasure");
+
+        int width = getMeasuredWidth();
+        int height = getMeasuredHeight();
+        int widthWithoutPadding = width - getPaddingLeft() - getPaddingRight();
+        int heigthWithoutPadding = height - getPaddingTop() - getPaddingBottom();
+
+        Log.d("BarChart", "size without padding (" + widthWithoutPadding + ", " + heigthWithoutPadding + ")");
+        int newWidth = mChartLayout.getCalcWidth() + getPaddingLeft() + getPaddingRight();
+        setMeasuredDimension(newWidth, height);
+        Log.d("BarChart", "Setting measured dimension (" + newWidth + ", " + height + ")");
     }
 
     @Override
@@ -838,7 +849,7 @@ public class BarChart extends View {
             //mark
             canvas.drawLine(dd.markX0, dd.markY, dd.markX, dd.markY, mAxesPaint);
             //label
-            canvas.drawText(dd.labelText, dd.labelX, dd.labelY, mAxesPaint);
+            canvas.drawText(dd.labelText, dd.labelX, dd.labelY, mAxesTextPaint);
         }
         //value axis
         canvas.drawLine(chartRect.left, chartRect.top, chartRect.left, chartRect.bottom, mAxesPaint);
@@ -848,7 +859,7 @@ public class BarChart extends View {
         Log.d("BarChart", "onDraw executed in " + elapsedTime + " ns");
     }
 
-    static class SavedState extends BaseSavedState {
+    private final static class SavedState extends BaseSavedState {
         SeriesList seriesList;
 
         SavedState(Parcelable superState) {
@@ -878,22 +889,17 @@ public class BarChart extends View {
         };
     }
 
-
     @Override
     public Parcelable onSaveInstanceState() {
         Parcelable superState = super.onSaveInstanceState();
-
         SavedState ss = new SavedState(superState);
-
         ss.seriesList = mSeriesList;
-
         return ss;
     }
 
     @Override
     public void onRestoreInstanceState(Parcelable state) {
         SavedState ss = (SavedState) state;
-
         super.onRestoreInstanceState(ss.getSuperState());
 
         mSeriesList = ss.seriesList;

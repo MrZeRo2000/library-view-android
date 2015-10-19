@@ -40,5 +40,13 @@
         <attr name="arcMargin" format="dimension" />
         <attr name="arcThickness" format="dimension" />
         <attr name="progressStyle" />
-	</declare-styleable>    
+	</declare-styleable>
+    <declare-styleable name="BarChart">
+        <attr name = "axisColor" format = "color" />
+        <attr name = "axisWidth" format = "dimension" />
+        <attr name = "textSize" />
+        <attr name = "textColor" />
+        <attr name = "textStyle" />
+        <attr name = "barColor" format = "color" />
+    </declare-styleable>
 </resources>
