@@ -6,7 +6,7 @@ android {
 
     defaultConfig {
         applicationId "com.romanpulov.libraryandroidtest"
-        minSdkVersion 11
+        minSdkVersion 13
         targetSdkVersion 23
     }
 
@@ -28,7 +28,8 @@ repositories {
 }
 
 dependencies {
-    compile 'com.android.support:appcompat-v7:23.0.0'
+    compile 'com.android.support:appcompat-v7:23.0.1'
+    compile 'com.android.support:support-v13:23.0.1'
     //compile 'com.romanpulov.library:library:1.0.2'
     compile project(':library')
 }

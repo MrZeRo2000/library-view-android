@@ -1,5 +1,6 @@
 package com.romanpulov.libraryandroidtest;
 
+import android.content.Intent;
 import android.os.Bundle;
 import android.app.Activity;
 import android.util.Log;
@@ -20,6 +21,15 @@ public class MainActivity extends Activity {
 	protected void onCreate(Bundle savedInstanceState) {
 		super.onCreate(savedInstanceState);
 		setContentView(R.layout.activity_main);
+
+        final Button startPagerButton = (Button) findViewById(R.id.startPagerButton);
+        startPagerButton.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                Intent intent = new Intent(MainActivity.this, PagerActivity.class);
+                startActivity(intent);
+            }
+        });
 		
 	    final Button getValueButton = (Button) findViewById(R.id.getValueButton);
 	    getValueButton.setOnClickListener(new View.OnClickListener() {
