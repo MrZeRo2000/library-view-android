@@ -147,6 +147,7 @@ public class BarChart extends View {
             dest.writeList(mData);
         }
 
+        @SuppressWarnings("unchecked")
         private SeriesList(Parcel in) {
             mData = in.readArrayList(Series.class.getClassLoader());
         }
@@ -165,8 +166,8 @@ public class BarChart extends View {
     public static class Series {
         private List<ChartValue> mData = new ArrayList<>();
 
-        private int mGradientColor0;
-        private int mGradientColor;
+        private int mGradientColor0 = Color.BLACK;
+        private int mGradientColor = Color.BLACK;
 
         public void setGradientColors(int color0, int color) {
             mGradientColor0 = color0;
@@ -658,7 +659,7 @@ public class BarChart extends View {
         public void updateValueLayout() {
             //lazy list creation
             if (mValueDrawDataList == null)
-                mValueDrawDataList = new ArrayList<ValueDrawData>(mChartLayout.getYAxis().getAxisScale().getCount());
+                mValueDrawDataList = new ArrayList<>(mChartLayout.getYAxis().getAxisScale().getCount());
             else
                 mValueDrawDataList.clear();
 
@@ -691,7 +692,7 @@ public class BarChart extends View {
         public void updateArgumentLayout(Series series) {
             //lazy list creation
             if (mArgumentDrawDataList == null) {
-                mArgumentDrawDataList = new ArrayList<ArgumentDrawData>((int)mChartLayout.getXAxis().getAxisScale().getMaxValue());
+                mArgumentDrawDataList = new ArrayList<>((int)mChartLayout.getXAxis().getAxisScale().getMaxValue());
             } else {
                 mArgumentDrawDataList.clear();
             }
@@ -720,28 +721,28 @@ public class BarChart extends View {
                     if (textMeasure > mChartLayout.getBarItemWidth()) {
                         //need to truncate text size
                         double textRate = textLength * mChartLayout.getBarItemWidth() / textMeasure;
-                        labelText = labelText.substring(0, (int)textRate);
+                        labelText = labelText.substring(0, (int) textRate);
                         textMeasure = mChartLayout.getBarItemWidth();
                     }
 
                     argumentDrawData.labelX = x - textMeasure / 2;
                     argumentDrawData.labelY = chartRect.bottom + mChartLayout.getChartTextMargin() + mAxesTextPaint.getTextSize();
                     argumentDrawData.labelText = labelText;
+
+                    //bar
+                    double barHeight = series.get(i).y * chartRect.height() / mChartLayout.getYAxis().getAxisScale().getMaxValue();
+                    argumentDrawData.barX0 = x - mChartLayout.getBarItemWidth() / 4;
+                    argumentDrawData.barY0 = (float) (chartRect.bottom - barHeight);
+                    argumentDrawData.barX = x + mChartLayout.getBarItemWidth() / 4;
+                    argumentDrawData.barY = chartRect.bottom + 1;
+                    argumentDrawData.barShader = new LinearGradient(
+                            argumentDrawData.barX0, argumentDrawData.barY0, argumentDrawData.barX0, argumentDrawData.barY,
+                            series.getGradientColor0(), series.getGradientColor(),
+                            Shader.TileMode.CLAMP);
+
+                    //add to list
+                    mArgumentDrawDataList.add(argumentDrawData);
                 }
-
-                //bar
-                double barHeight = series.get(i).y * chartRect.height() / mChartLayout.getYAxis().getAxisScale().getMaxValue();
-                argumentDrawData.barX0 = x - mChartLayout.getBarItemWidth() / 4;
-                argumentDrawData.barY0 = (float) (chartRect.bottom - barHeight);
-                argumentDrawData.barX = x + mChartLayout.getBarItemWidth() / 4;
-                argumentDrawData.barY = chartRect.bottom + 1;
-                argumentDrawData.barShader = new LinearGradient(
-                        argumentDrawData.barX0, argumentDrawData.barY0, argumentDrawData.barX0, argumentDrawData.barY,
-                        series.getGradientColor0(), series.getGradientColor(),
-                        Shader.TileMode.CLAMP);
-
-                //add to list
-                mArgumentDrawDataList.add(argumentDrawData);
 
                 //next step
                 x += axisItemWidth;
