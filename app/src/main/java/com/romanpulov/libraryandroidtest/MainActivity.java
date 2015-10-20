@@ -106,7 +106,7 @@ public class MainActivity extends Activity {
                 int maxValue = Integer.valueOf(maxValueText.getText().toString());
 
                 BarChart.Series series = barChart.addSeries();
-                series.setGradientColors(0xffbf00ff, 0xff000033);
+                series.setGradientColors(0xffbf8aff, 0xff008a33);
 
                 Random rnd = new Random();
 
@@ -125,6 +125,7 @@ public class MainActivity extends Activity {
                 barChart.updateSeriesListValueBounds();
                 barChart.updateChartLayout();
                 barChart.requestLayout();
+                Log.d("BarChart", "Series=" + barChart.getSeries(0));
                 barChart.invalidate();
             }
         });

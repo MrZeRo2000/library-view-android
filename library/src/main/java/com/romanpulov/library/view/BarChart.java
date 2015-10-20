@@ -11,6 +11,7 @@ import android.graphics.Shader;
 import android.graphics.Typeface;
 import android.os.Parcel;
 import android.os.Parcelable;
+import android.support.annotation.NonNull;
 import android.util.AttributeSet;
 import android.util.DisplayMetrics;
 import android.util.Log;
@@ -40,7 +41,7 @@ public class BarChart extends View {
     private Paint mAxesTextPaint;
     private Paint mBarPaint;
 
-    private SeriesList mSeriesList = new SeriesList();
+    private SeriesList mSeriesList;
 
     public Series getSeries(int location) {
         return mSeriesList.get(location);
@@ -147,9 +148,8 @@ public class BarChart extends View {
             dest.writeList(mData);
         }
 
-        @SuppressWarnings("unchecked")
         private SeriesList(Parcel in) {
-            mData = in.readArrayList(Series.class.getClassLoader());
+            mData = in.readParcelable(SeriesList.class.getClassLoader());
         }
 
         public static final Parcelable.Creator<SeriesList> CREATOR = new Parcelable.Creator<SeriesList>() {
@@ -161,10 +161,16 @@ public class BarChart extends View {
                 return new SeriesList[size];
             }
         };
+
+
     }
     
-    public static class Series {
+    public static class Series implements Parcelable  {
         private List<ChartValue> mData = new ArrayList<>();
+
+        public Series() {
+
+        }
 
         private int mGradientColor0 = Color.BLACK;
         private int mGradientColor = Color.BLACK;
@@ -224,15 +230,44 @@ public class BarChart extends View {
         public boolean addXY(double x, String xLabel, double y) {
             return add(new ChartValue(x, xLabel, y));
         }
+
+        @Override
+        public int describeContents() {
+            return 0;
+        }
+
+        @Override
+        public void writeToParcel(Parcel dest, int flags) {
+            dest.writeTypedList(mData);
+            dest.writeInt(mGradientColor0);
+            dest.writeInt(mGradientColor);
+        }
+
+        public static final Parcelable.Creator<Series> CREATOR
+                = new Parcelable.Creator<Series>() {
+            public Series createFromParcel(Parcel in) {
+                return new Series(in);
+            }
+
+            public Series[] newArray(int size) {
+                return new Series[size];
+            }
+        };
+
+        private Series(Parcel in) {
+            in.readTypedList(mData, ChartValue.CREATOR);
+            mGradientColor0 = in.readInt();
+            mGradientColor = in.readInt();
+        }
     }
 
-    public static class ChartValue implements Comparable {
+    public static class ChartValue implements Comparable, Parcelable {
         public Double x;
         public String xLabel;
         public Double y;
 
         @Override
-        public int compareTo(Object another) {
+        public int compareTo(@NonNull Object another) {
             if (another instanceof ChartValue)
                 return x.compareTo(((ChartValue) another).x);
             else
@@ -243,6 +278,35 @@ public class BarChart extends View {
             this.x = x;
             this.xLabel = xLabel;
             this.y = y;
+        }
+
+        @Override
+        public int describeContents() {
+            return 0;
+        }
+
+        @Override
+        public void writeToParcel(Parcel dest, int flags) {
+            dest.writeDouble(x);
+            dest.writeString(xLabel);
+            dest.writeDouble(y);
+        }
+
+        public static final Parcelable.Creator<ChartValue> CREATOR
+                = new Parcelable.Creator<ChartValue>() {
+            public ChartValue createFromParcel(Parcel in) {
+                return new ChartValue(in);
+            }
+
+            public ChartValue[] newArray(int size) {
+                return new ChartValue[size];
+            }
+        };
+
+        private ChartValue(Parcel in) {
+            x = in.readDouble();
+            xLabel = in.readString();
+            y = in.readDouble();
         }
     }
 
@@ -757,6 +821,8 @@ public class BarChart extends View {
     public BarChart(Context context, AttributeSet attrs) {
         super(context, attrs);
 
+        mSeriesList = new SeriesList();
+
         mAxesPaint = new Paint();
         mAxesPaint.setStyle(Paint.Style.STROKE);
         mAxesTextPaint = new Paint();
@@ -794,10 +860,10 @@ public class BarChart extends View {
         int width = getMeasuredWidth();
         int height = getMeasuredHeight();
         int widthWithoutPadding = width - getPaddingLeft() - getPaddingRight();
-        int heigthWithoutPadding = height - getPaddingTop() - getPaddingBottom();
+        int heightWithoutPadding = height - getPaddingTop() - getPaddingBottom();
 
-        Log.d("BarChart", "updating layout for (" + widthWithoutPadding + ", " + heigthWithoutPadding + ")");
-        mChartLayout.updateLayout(widthWithoutPadding, heigthWithoutPadding, getResources().getDisplayMetrics(), mSeriesList);
+        Log.d("BarChart", "updating layout for (" + widthWithoutPadding + ", " + heightWithoutPadding + ")");
+        mChartLayout.updateLayout(widthWithoutPadding, heightWithoutPadding, getResources().getDisplayMetrics(), mSeriesList);
         Log.d("BarChart", "ChartLayout" + mChartLayout);
 
         Series series = null;
@@ -814,9 +880,9 @@ public class BarChart extends View {
         int width = getMeasuredWidth();
         int height = getMeasuredHeight();
         int widthWithoutPadding = width - getPaddingLeft() - getPaddingRight();
-        int heigthWithoutPadding = height - getPaddingTop() - getPaddingBottom();
+        int heightWithoutPadding = height - getPaddingTop() - getPaddingBottom();
 
-        Log.d("BarChart", "size without padding (" + widthWithoutPadding + ", " + heigthWithoutPadding + ")");
+        Log.d("BarChart", "size without padding (" + widthWithoutPadding + ", " + heightWithoutPadding + ")");
         int newWidth = mChartLayout.getCalcWidth() + getPaddingLeft() + getPaddingRight();
         setMeasuredDimension(newWidth, height);
         Log.d("BarChart", "Setting measured dimension (" + newWidth + ", " + height + ")");
@@ -860,7 +926,7 @@ public class BarChart extends View {
         Log.d("BarChart", "onDraw executed in " + elapsedTime + " ns");
     }
 
-    private final static class SavedState extends BaseSavedState {
+    public static class SavedState extends BaseSavedState {
         SeriesList seriesList;
 
         SavedState(Parcelable superState) {
