@@ -11,7 +11,6 @@ import android.graphics.Shader;
 import android.graphics.Typeface;
 import android.os.Parcel;
 import android.os.Parcelable;
-import android.support.annotation.NonNull;
 import android.util.AttributeSet;
 import android.util.DisplayMetrics;
 import android.util.Log;
@@ -261,17 +260,14 @@ public class BarChart extends View {
         }
     }
 
-    public static class ChartValue implements Comparable, Parcelable {
+    public static class ChartValue implements Comparable<ChartValue>, Parcelable {
         public Double x;
         public String xLabel;
         public Double y;
 
         @Override
-        public int compareTo(@NonNull Object another) {
-            if (another instanceof ChartValue)
-                return x.compareTo(((ChartValue) another).x);
-            else
-                return 0;
+        public int compareTo(ChartValue another) {
+            return x.compareTo(((ChartValue) another).x);
         }
 
         public ChartValue(Double x, String xLabel, Double y) {
