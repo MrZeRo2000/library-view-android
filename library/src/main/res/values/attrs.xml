@@ -44,6 +44,12 @@
     <declare-styleable name="BarChart">
         <attr name = "axisColor" format = "color" />
         <attr name = "axisWidth" format = "dimension" />
+        <attr name = "xGridVisible" format="boolean" />
+        <attr name = "xGridColor" format = "color" />
+        <attr name = "xGridWidth" format = "dimension" />
+        <attr name = "yGridVisible" format="boolean" />
+        <attr name = "yGridColor" format = "color" />
+        <attr name = "yGridWidth" format = "dimension" />
         <attr name = "textSize" />
         <attr name = "textColor" />
         <attr name = "textStyle" />

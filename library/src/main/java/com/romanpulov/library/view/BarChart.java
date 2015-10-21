@@ -33,11 +33,16 @@ public class BarChart extends View {
     public static final int DEFAULT_AXIS_TEXT_COLOR = Color.BLACK;
     public static final int DEFAULT_AXIS_TEXT_SIZE = 14;
     public static final int DEFAULT_BAR_COLOR = Color.BLACK;
+    public static final boolean DEFAULT_GRID_VISIBLE = false;
+    public static final int DEFAULT_GRID_COLOR = Color.GRAY;
+    public static final int DEFAULT_GRID_WIDTH = 1;
     private ChartLayout mChartLayout;
     private ChartDrawLayout mChartDrawLayout;
 
     private Paint mAxesPaint;
     private Paint mAxesTextPaint;
+    private Paint mXGridPaint;
+    private Paint mYGridPaint;
     private Paint mBarPaint;
 
     private SeriesList mSeriesList;
@@ -730,7 +735,12 @@ public class BarChart extends View {
             int y = chartRect.bottom;
             double axisValueStep = mChartLayout.getYAxis().getAxisScale().getMaxValue() / mChartLayout.getYAxis().getAxisScale().getCount();
             double axisValue = 0d;
-            for (int i = 0; i <= mChartLayout.getYAxis().getAxisScale().getCount(); i++) {
+            int axisCount = mChartLayout.getYAxis().getAxisScale().getCount();
+            for (int i = 0; i <= axisCount; i++) {
+                if (i == axisCount) {
+                    y = chartRect.top;
+                }
+
                 ValueDrawData valueDrawData = new ValueDrawData();
 
                 valueDrawData.markX0 = chartRect.left - axisMarkSize;
@@ -761,13 +771,13 @@ public class BarChart extends View {
             //argument axis
             int axisItemWidth = mChartLayout.getBarItemWidth();
             int axisMarkSize = mChartLayout.getAxisMarkSize();
-            int x = chartRect.left + mChartLayout.getBarItemWidth() / 2;
+            int x = chartRect.left + axisItemWidth / 2;
 
             for (int i = 0; i < mChartLayout.getXAxis().getAxisScale().getMaxValue(); i++) {
                 ArgumentDrawData argumentDrawData = new ArgumentDrawData();
 
                 //draw mark
-                argumentDrawData.markX = x;
+                argumentDrawData.markX = x + axisItemWidth / 2;
                 argumentDrawData.markY0 = chartRect.bottom - axisMarkSize;
                 argumentDrawData.markY = chartRect.bottom + axisMarkSize;
 
@@ -792,7 +802,7 @@ public class BarChart extends View {
                     //bar
                     double barHeight = series.get(i).y * chartRect.height() / mChartLayout.getYAxis().getAxisScale().getMaxValue();
                     argumentDrawData.barX0 = x - mChartLayout.getBarItemWidth() / 4;
-                    argumentDrawData.barY0 = (float) (chartRect.bottom - barHeight);
+                    argumentDrawData.barY0 = (float) (chartRect.bottom - barHeight) + 1;
                     argumentDrawData.barX = x + mChartLayout.getBarItemWidth() / 4;
                     argumentDrawData.barY = chartRect.bottom + 1;
                     argumentDrawData.barShader = new LinearGradient(
@@ -826,13 +836,31 @@ public class BarChart extends View {
 
         //read resources
         TypedArray a = context.obtainStyledAttributes(attrs, R.styleable.BarChart);
+        //axes
         mAxesPaint.setColor(a.getColor(R.styleable.BarChart_axisColor, DEFAULT_AXIS_COLOR));
         mAxesPaint.setStrokeWidth(a.getDimensionPixelOffset(R.styleable.BarChart_axisWidth, (int) (DEFAULT_AXIS_WIDTH * getResources().getDisplayMetrics().density)));
         mAxesTextPaint.setColor(a.getColor(R.styleable.BarChart_textColor, DEFAULT_AXIS_TEXT_COLOR));
         mAxesTextPaint.setTextSize(a.getDimensionPixelSize(R.styleable.BarChart_textSize, DEFAULT_AXIS_TEXT_SIZE) * getResources().getDisplayMetrics().density);
         Typeface tf = Typeface.create("", a.getInt(R.styleable.BarChart_textStyle, Typeface.NORMAL));
         mAxesTextPaint.setTypeface(tf);
+        //bar
         mBarPaint.setColor(a.getColor(R.styleable.BarChart_barColor, DEFAULT_BAR_COLOR));
+        //x grid
+        boolean xGridVisible = a.getBoolean(R.styleable.BarChart_xGridVisible, DEFAULT_GRID_VISIBLE);
+        if (xGridVisible) {
+            mXGridPaint = new Paint();
+            mXGridPaint.setStyle(Paint.Style.STROKE);
+            mXGridPaint.setColor(a.getColor(R.styleable.BarChart_xGridColor, DEFAULT_GRID_COLOR));
+            mXGridPaint.setStrokeWidth(a.getDimensionPixelOffset(R.styleable.BarChart_xGridWidth, (int) (DEFAULT_AXIS_WIDTH * getResources().getDisplayMetrics().density)));
+        }
+        //y grid
+        boolean yGridVisible = a.getBoolean(R.styleable.BarChart_yGridVisible, DEFAULT_GRID_VISIBLE);
+        if (yGridVisible) {
+            mYGridPaint = new Paint();
+            mYGridPaint.setStyle(Paint.Style.STROKE);
+            mYGridPaint.setColor(a.getColor(R.styleable.BarChart_yGridColor, DEFAULT_GRID_COLOR));
+            mYGridPaint.setStrokeWidth(a.getDimensionPixelOffset(R.styleable.BarChart_yGridWidth, (int) (DEFAULT_AXIS_WIDTH * getResources().getDisplayMetrics().density)));
+        }
         a.recycle();
 
         mChartLayout = new ChartLayout();
@@ -891,6 +919,19 @@ public class BarChart extends View {
         long startTime = System.nanoTime();
 
         final Rect chartRect = mChartLayout.getChartRect();
+
+        //argument grid
+        if (mXGridPaint != null)
+            for (ArgumentDrawData dd : mChartDrawLayout.getArgumentDrawDataList()) {
+                canvas.drawLine(dd.markX, chartRect.top, dd.markX, dd.markY, mXGridPaint);
+            }
+        //value grid
+        if (mYGridPaint != null) {
+            for (ValueDrawData dd : mChartDrawLayout.getValueDrawDataList()) {
+                canvas.drawLine(dd.markX, dd.markY, chartRect.right, dd.markY, mYGridPaint);
+            }
+        }
+
         //argument
         for (ArgumentDrawData dd : mChartDrawLayout.getArgumentDrawDataList()) {
             //mark
