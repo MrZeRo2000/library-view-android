@@ -43,7 +43,7 @@ ext {
     artifact = 'library'
 
     libraryDescription = 'Roman Pulov library for Android'
-    libraryVersion = '1.0.6'
+    libraryVersion = '1.0.7'
 
     developerId = 'romanpulov'
     developerName = 'Roman Pulov'
