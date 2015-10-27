@@ -13,7 +13,6 @@ import android.os.Parcel;
 import android.os.Parcelable;
 import android.util.AttributeSet;
 import android.util.DisplayMetrics;
-import android.util.Log;
 import android.util.TypedValue;
 import android.view.View;
 
@@ -35,7 +34,6 @@ public class BarChart extends View {
     public static final int DEFAULT_BAR_COLOR = Color.BLACK;
     public static final boolean DEFAULT_GRID_VISIBLE = false;
     public static final int DEFAULT_GRID_COLOR = Color.GRAY;
-    public static final int DEFAULT_GRID_WIDTH = 1;
     private ChartLayout mChartLayout;
     private ChartDrawLayout mChartDrawLayout;
 
@@ -644,7 +642,6 @@ public class BarChart extends View {
             if (yAxisCount < 1)
                 yAxisCount = 1;
             mYAxis.setRange(0, chartValueBounds.maxY, yAxisCount);
-            Log.d("BarChart", "Axis.setRange maxY=" + chartValueBounds.maxY + ", yAxisCount=" + yAxisCount);
 
             if (mChartRect.width() < 1)
                 mCalcWidth = 0;
@@ -876,7 +873,6 @@ public class BarChart extends View {
     @Override
     protected void onSizeChanged(int w, int h, int oldw, int oldh) {
         super.onSizeChanged(w, h, oldw, oldh);
-        Log.d("BarChart", "onSizeChanged (" + w + ", " + h + ")");
         updateChartLayout();
     }
 
@@ -886,9 +882,7 @@ public class BarChart extends View {
         int widthWithoutPadding = width - getPaddingLeft() - getPaddingRight();
         int heightWithoutPadding = height - getPaddingTop() - getPaddingBottom();
 
-        Log.d("BarChart", "updating layout for (" + widthWithoutPadding + ", " + heightWithoutPadding + ")");
         mChartLayout.updateLayout(widthWithoutPadding, heightWithoutPadding, getResources().getDisplayMetrics(), mSeriesList);
-        Log.d("BarChart", "ChartLayout" + mChartLayout);
 
         Series series = null;
         if (mSeriesList.size() > 0)
@@ -899,24 +893,16 @@ public class BarChart extends View {
     @Override
     protected void onMeasure(int widthMeasureSpec, int heightMeasureSpec) {
         super.onMeasure(widthMeasureSpec, heightMeasureSpec);
-        Log.d("BarChart", "onMeasure");
 
-        int width = getMeasuredWidth();
         int height = getMeasuredHeight();
-        int widthWithoutPadding = width - getPaddingLeft() - getPaddingRight();
-        int heightWithoutPadding = height - getPaddingTop() - getPaddingBottom();
 
-        Log.d("BarChart", "size without padding (" + widthWithoutPadding + ", " + heightWithoutPadding + ")");
         int newWidth = mChartLayout.getCalcWidth() + getPaddingLeft() + getPaddingRight();
         setMeasuredDimension(newWidth, height);
-        Log.d("BarChart", "Setting measured dimension (" + newWidth + ", " + height + ")");
     }
 
     @Override
     protected void onDraw(Canvas canvas) {
         super.onDraw(canvas);
-        Log.d("BarChart", "onDraw");
-        long startTime = System.nanoTime();
 
         final Rect chartRect = mChartLayout.getChartRect();
 
@@ -957,10 +943,6 @@ public class BarChart extends View {
         }
         //value axis
         canvas.drawLine(chartRect.left, chartRect.top, chartRect.left, chartRect.bottom, mAxesPaint);
-
-        long stopTime = System.nanoTime();
-        long elapsedTime = stopTime - startTime;
-        Log.d("BarChart", "onDraw executed in " + elapsedTime + " ns");
     }
 
     public static class SavedState extends BaseSavedState {

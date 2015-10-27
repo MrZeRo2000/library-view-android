@@ -46,6 +46,7 @@ public class ProgressCircle extends View {
 
     // appearance
     private boolean mAutoHide;
+    private boolean mAlwaysVisible = false;
     private int mProgressColor;
     private int mProgressRestColor;
     private int mArcMargin;
@@ -53,7 +54,6 @@ public class ProgressCircle extends View {
 
     private String mDisplayProgressText;
     private String mMaxDisplayValueText;
-    private String mMinDisplayValueText;
     private String mDisplayValueFormat;
     private int mMaxValueDigits;
 
@@ -152,7 +152,6 @@ public class ProgressCircle extends View {
         }
 
         mMaxDisplayValueText =  String.valueOf(maxDisplayValue);
-        mMinDisplayValueText = "";
         mDisplayValueFormat = String.format(Locale.getDefault(), DISPLAY_FORMAT_LIST[mProgressStyle], mMaxValueDigits);
     }
 
@@ -160,8 +159,6 @@ public class ProgressCircle extends View {
         if ((mProgress >= mMax) && (mProgressStyle == PROGRESS_STYLE_PERCENT)) {
             // for 100% outputting unformatted
             return mMaxDisplayValueText;
-        } else if (mMin == mProgress) {
-            return mMinDisplayValueText;
         } else	{
             int displayProgress;
             switch (mProgressStyle) {
@@ -179,6 +176,28 @@ public class ProgressCircle extends View {
             }
 
             return String.format(Locale.getDefault(), mDisplayValueFormat, displayProgress);
+        }
+    }
+
+    public boolean getAlwaysVisible() {
+        return mAlwaysVisible;
+    }
+
+    public void setAlwaysVisible(boolean alwaysVisible) {
+        if (alwaysVisible != mAlwaysVisible) {
+            mAlwaysVisible = alwaysVisible;
+            requestLayout();
+        }
+    }
+
+    public boolean getAutoHide() {
+        return mAutoHide;
+    }
+
+    public void setAutoHide(boolean autoHide) {
+        if (autoHide != mAutoHide) {
+            mAutoHide = autoHide;
+            requestLayout();
         }
     }
 
@@ -207,24 +226,30 @@ public class ProgressCircle extends View {
     }
 
     public void setProgress(int progress) {
-        // change progress
+        // change progress detection
+        int newProgress;
         if (progress < mMin) {
-            mProgress = mMin;
+            newProgress = mMin;
         } else if (progress > mMax) {
-            mProgress = mMax;
+            newProgress = mMax;
         } else
-            mProgress = progress;
-        mDisplayProgressText = getDisplayProgress();
+            newProgress = progress;
 
-        //redraw control
-        invalidate();
+        //handle progress changes
+        if (newProgress != mProgress) {
+            mProgress = newProgress;
+            mDisplayProgressText = getDisplayProgress();
 
-        //autoHide support
-        if (mAutoHide) {
-            if (((mPrevProgress == mMin) && (mProgress != mMin)) || ((mPrevProgress != mMin) && (mProgress == mMin))) {
-                requestLayout();
+            //redraw control
+            invalidate();
+
+            //autoHide support
+            if (mAutoHide) {
+                if (((mPrevProgress == mMin) && (mProgress != mMin)) || ((mPrevProgress != mMin) && (mProgress == mMin))) {
+                    requestLayout();
+                }
+                mPrevProgress = mProgress;
             }
-            mPrevProgress = mProgress;
         }
     }
 
@@ -313,10 +338,8 @@ public class ProgressCircle extends View {
             canvas.drawArc(mArcRect, 90, progressAngle, false, mArcPaint);
 
             //draw rest
-            if (mProgress > mMin) {
-                mArcPaint.setColor(mProgressRestColor);
-                canvas.drawArc(mArcRect, 90 + progressAngle, 360 - progressAngle, false, mArcPaint);
-            }
+            mArcPaint.setColor(mProgressRestColor);
+            canvas.drawArc(mArcRect, 90 + progressAngle, 360 - progressAngle, false, mArcPaint);
         }
     }
 
@@ -363,10 +386,8 @@ public class ProgressCircle extends View {
         }
         
         //autoHide support
-        if (mAutoHide) {
-            if (mProgress == mMin) {
-                size = 0;
-            }
+        if (mAutoHide && (mProgress == mMin) && (!mAlwaysVisible)) {
+            size = 0;
         }
         
         setMeasuredDimension(size + getPaddingLeft() + getPaddingRight(), size + getPaddingTop() + getPaddingBottom());

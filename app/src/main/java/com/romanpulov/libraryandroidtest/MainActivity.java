@@ -52,11 +52,12 @@ public class MainActivity extends Activity {
             }
         });
 
+        final ProgressCircle ps = (ProgressCircle) findViewById(R.id.progressCircle1);
+
 		final SeekBar seekBar = (SeekBar) findViewById(R.id.seekBar1);
 		seekBar.setOnSeekBarChangeListener(new SeekBar.OnSeekBarChangeListener() {
             @Override
             public void onProgressChanged(SeekBar seekBar, int progress, boolean fromUser) {
-                final ProgressCircle ps = (ProgressCircle) findViewById(R.id.progressCircle1);
                 ps.setProgress(progress);
             }
 
@@ -68,6 +69,15 @@ public class MainActivity extends Activity {
             @Override
             public void onStopTrackingTouch(SeekBar seekBar) {
 
+            }
+        });
+
+        final Button alwaysVisibleButton = (Button) findViewById(R.id.alwaysVisibleButton);
+        alwaysVisibleButton.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                ps.setAlwaysVisible(true);
+                ps.requestLayout();
             }
         });
 

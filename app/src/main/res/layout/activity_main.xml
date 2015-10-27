@@ -72,6 +72,7 @@
         android:layout_width="50dp"
         android:layout_height="50dp"
         android:layout_below="@+id/timePicker1"
+        app:autoHide="true"
         app:textColor="#FFFFFF00"
         app:textSize="5pt"
         app:textStyle="bold|italic"
@@ -90,6 +91,14 @@
         android:layout_height="wrap_content"
         android:layout_below="@+id/progressCircle1"
         android:max="140"
+        />
+    <Button
+        android:id="@+id/alwaysVisibleButton"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_alignBottom="@id/seekBar1"
+        android:layout_toRightOf="@id/seekBar1"
+        android:text="Always Visible"
         />
     <Button
         android:id="@+id/setChartValuesButton"
