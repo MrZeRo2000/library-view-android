@@ -919,27 +919,31 @@ public class BarChart extends View {
         }
 
         //argument
-        for (ArgumentDrawData dd : mChartDrawLayout.getArgumentDrawDataList()) {
-            //mark
-            canvas.drawLine(dd.markX, dd.markY0, dd.markX, dd.markY, mAxesPaint);
-            //label
-            canvas.drawText(dd.labelText, dd.labelX, dd.labelY, mAxesTextPaint);
-            //bar
-            mBarPaint.setShader(dd.barShader);
-            mBarPaint.setStyle(Paint.Style.FILL);
-            canvas.drawRect(dd.barX0, dd.barY0, dd.barX, dd.barY, mBarPaint);
-            mBarPaint.setStyle(Paint.Style.STROKE);
-            canvas.drawRect(dd.barX0, dd.barY0, dd.barX, dd.barY, mBarPaint);
+        if (mXGridPaint != null) {
+            for (ArgumentDrawData dd : mChartDrawLayout.getArgumentDrawDataList()) {
+                //mark
+                canvas.drawLine(dd.markX, dd.markY0, dd.markX, dd.markY, mAxesPaint);
+                //label
+                canvas.drawText(dd.labelText, dd.labelX, dd.labelY, mAxesTextPaint);
+                //bar
+                mBarPaint.setShader(dd.barShader);
+                mBarPaint.setStyle(Paint.Style.FILL);
+                canvas.drawRect(dd.barX0, dd.barY0, dd.barX, dd.barY, mBarPaint);
+                mBarPaint.setStyle(Paint.Style.STROKE);
+                canvas.drawRect(dd.barX0, dd.barY0, dd.barX, dd.barY, mBarPaint);
+            }
         }
         //argument axis
         canvas.drawLine(chartRect.left, chartRect.bottom, chartRect.right, chartRect.bottom,  mAxesPaint);
 
         //value
-        for (ValueDrawData dd : mChartDrawLayout.getValueDrawDataList()) {
-            //mark
-            canvas.drawLine(dd.markX0, dd.markY, dd.markX, dd.markY, mAxesPaint);
-            //label
-            canvas.drawText(dd.labelText, dd.labelX, dd.labelY, mAxesTextPaint);
+        if (mYGridPaint != null) {
+            for (ValueDrawData dd : mChartDrawLayout.getValueDrawDataList()) {
+                //mark
+                canvas.drawLine(dd.markX0, dd.markY, dd.markX, dd.markY, mAxesPaint);
+                //label
+                canvas.drawText(dd.labelText, dd.labelX, dd.labelY, mAxesTextPaint);
+            }
         }
         //value axis
         canvas.drawLine(chartRect.left, chartRect.top, chartRect.left, chartRect.bottom, mAxesPaint);

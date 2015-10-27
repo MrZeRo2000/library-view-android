@@ -315,10 +315,10 @@ public class ProgressCircle extends View {
     protected void onDraw(Canvas canvas) {
         super.onDraw(canvas);
 
-        final int width = getWidth();
-        final int height = getHeight();
+        final int width = getWidth() - getPaddingRight() - getPaddingLeft();
+        final int height = getHeight() - getPaddingTop() - getPaddingBottom();
 
-        canvas.drawText(mDisplayProgressText, (width - mTextBounds.width()) / 2, height - (height - mTextBounds.height()) / 2, mTextPaint);
+        canvas.drawText(mDisplayProgressText, (width - mTextBounds.width()) / 2, height/2 + mTextBounds.height()/2, mTextPaint);
 
         //draw border for testing purposes
         //canvas.drawRect(0, 0, width, height, mTextPaint);
