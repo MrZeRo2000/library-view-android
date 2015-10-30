@@ -905,22 +905,23 @@ public class BarChart extends View {
         super.onDraw(canvas);
 
         final Rect chartRect = mChartLayout.getChartRect();
+        final List<ArgumentDrawData> argumentDrawDataList = mChartDrawLayout.getArgumentDrawDataList();
+        final List<ValueDrawData> valueDrawDataList = mChartDrawLayout.getValueDrawDataList();
 
         //argument grid
-        if (mXGridPaint != null)
-            for (ArgumentDrawData dd : mChartDrawLayout.getArgumentDrawDataList()) {
+        if ((mXGridPaint != null) && (argumentDrawDataList != null))
+            for (ArgumentDrawData dd : argumentDrawDataList) {
                 canvas.drawLine(dd.markX, chartRect.top, dd.markX, dd.markY, mXGridPaint);
             }
         //value grid
-        if (mYGridPaint != null) {
-            for (ValueDrawData dd : mChartDrawLayout.getValueDrawDataList()) {
+        if ((mYGridPaint != null) && (valueDrawDataList != null))
+            for (ValueDrawData dd : valueDrawDataList) {
                 canvas.drawLine(dd.markX, dd.markY, chartRect.right, dd.markY, mYGridPaint);
             }
-        }
 
         //argument
-        if (mXGridPaint != null) {
-            for (ArgumentDrawData dd : mChartDrawLayout.getArgumentDrawDataList()) {
+        if (argumentDrawDataList != null) {
+            for (ArgumentDrawData dd : argumentDrawDataList) {
                 //mark
                 canvas.drawLine(dd.markX, dd.markY0, dd.markX, dd.markY, mAxesPaint);
                 //label
@@ -937,8 +938,8 @@ public class BarChart extends View {
         canvas.drawLine(chartRect.left, chartRect.bottom, chartRect.right, chartRect.bottom,  mAxesPaint);
 
         //value
-        if (mYGridPaint != null) {
-            for (ValueDrawData dd : mChartDrawLayout.getValueDrawDataList()) {
+        if (valueDrawDataList != null) {
+            for (ValueDrawData dd : valueDrawDataList) {
                 //mark
                 canvas.drawLine(dd.markX0, dd.markY, dd.markX, dd.markY, mAxesPaint);
                 //label
