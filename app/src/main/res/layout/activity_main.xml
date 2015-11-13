@@ -173,6 +173,8 @@
                 app:axisColor="#FFAAAAAA"
                 app:xGridVisible="true"
                 app:yGridVisible="true"
+                app:defaultGradientColor0="#FFFF4444"
+                app:defaultGradientColor="#FFFFAAAA"
                 />
         </LinearLayout>
     </HorizontalScrollView >

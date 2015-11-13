@@ -34,6 +34,7 @@ public class BarChart extends View {
     public static final int DEFAULT_BAR_COLOR = Color.BLACK;
     public static final boolean DEFAULT_GRID_VISIBLE = false;
     public static final int DEFAULT_GRID_COLOR = Color.GRAY;
+    public static final int DEFAULT_GRADIENT_COLOR = Color.BLACK;
     private ChartLayout mChartLayout;
     private ChartDrawLayout mChartDrawLayout;
 
@@ -42,6 +43,9 @@ public class BarChart extends View {
     private Paint mXGridPaint;
     private Paint mYGridPaint;
     private Paint mBarPaint;
+
+    private int mDefaultGradientColor0;
+    private int mDefaultGradientColor;
 
     private SeriesList mSeriesList;
 
@@ -52,6 +56,7 @@ public class BarChart extends View {
     public Series addSeries() {
         Series newSeries = new Series();
         mSeriesList.add(newSeries);
+        newSeries.setGradientColors(mDefaultGradientColor0, mDefaultGradientColor);
         return newSeries;
     }
 
@@ -622,7 +627,7 @@ public class BarChart extends View {
 
         private void calcLayout() {
             //chart body rect
-            mChartRect.top = mChartMargin;
+            mChartRect.top = mChartMargin + mAxesTextSymbolBounds.height() / 2;
             //  ensure bounds are calculated
             mSeriesList.updateValueBounds();
             //  calc according to bounds
@@ -635,7 +640,7 @@ public class BarChart extends View {
             //calculating according to range
             mChartRect.left = mChartMargin + mAxisMarkSize + mAxesTextSymbolBounds.width() * (displayMaxY.length() + 2);
             mChartRect.right = (int)(mChartRect.left + getXAxis().getAxisScale().getMaxValue() * mBarItemWidth);
-            mChartRect.bottom = mHeight - 2 * (mAxesTextSymbolBounds.height() + mChartTextMargin) - mChartMargin - mChartMargin;
+            mChartRect.bottom = mHeight - 2 * (mAxesTextSymbolBounds.height() + mChartTextMargin) - mChartMargin - mChartMargin - mAxesTextSymbolBounds.height() / 2;
 
             //Y calculations
             int yAxisCount = (mHeight - mChartMargin - mChartMargin) / ((mAxesTextSymbolBounds.height() + mChartTextMargin) * 2);
@@ -858,6 +863,10 @@ public class BarChart extends View {
             mYGridPaint.setColor(a.getColor(R.styleable.BarChart_yGridColor, DEFAULT_GRID_COLOR));
             mYGridPaint.setStrokeWidth(a.getDimensionPixelOffset(R.styleable.BarChart_yGridWidth, (int) (DEFAULT_AXIS_WIDTH * getResources().getDisplayMetrics().density)));
         }
+        //gradient colors
+        mDefaultGradientColor0 = a.getColor(R.styleable.BarChart_defaultGradientColor0, DEFAULT_GRADIENT_COLOR);
+        mDefaultGradientColor = a.getColor(R.styleable.BarChart_defaultGradientColor, DEFAULT_GRADIENT_COLOR);
+        //resource read complete
         a.recycle();
 
         mChartLayout = new ChartLayout();
