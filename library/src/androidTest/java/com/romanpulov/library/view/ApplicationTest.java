@@ -33,20 +33,21 @@ public class ApplicationTest extends ApplicationTestCase<Application> {
 
         Paint paint = new Paint();
 
-        BarChart.ChartLayout cl = new BarChart.ChartLayout();
+        DisplayMetrics dm = new DisplayMetrics();
+        assertNotNull(dm);
+
+        BarChart.ChartLayout cl = new BarChart.ChartLayout(dm);
         cl.setAxesTextPaint(paint);
         int width = 0;
         int height = 160;
 
-        DisplayMetrics dm = new DisplayMetrics();
-        assertNotNull(dm);
 
-        cl.updateLayout(width, height, dm, seriesList);
+        cl.updateLayout(width, height, seriesList);
         Log.d("ApplicationTest", "ChartRect = " + cl.getChartRect() + " IsLayoutValid = " + cl.getLayoutValid());
         Log.d("ApplicationTest", "xAxis = " + cl.getXAxis());
         Log.d("ApplicationTest", "yAxis = " + cl.getYAxis());
 
-        cl.updateLayout(width, height, dm, seriesList);
+        cl.updateLayout(width, height, seriesList);
         Log.d("ApplicationTest", "ChartRect = " + cl.getChartRect() + " IsLayoutValid = " + cl.getLayoutValid());
         Log.d("ApplicationTest", "xAxis = " + cl.getXAxis());
         Log.d("ApplicationTest", "yAxis = " + cl.getYAxis());

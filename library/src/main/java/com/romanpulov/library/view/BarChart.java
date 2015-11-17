@@ -1,5 +1,6 @@
 package com.romanpulov.library.view;
 
+import android.app.ActionBar;
 import android.content.Context;
 import android.content.res.TypedArray;
 import android.graphics.Canvas;
@@ -14,8 +15,13 @@ import android.os.Parcelable;
 import android.util.AttributeSet;
 import android.util.DisplayMetrics;
 import android.util.TypedValue;
+import android.view.Gravity;
 import android.view.MotionEvent;
 import android.view.View;
+import android.view.ViewGroup;
+import android.widget.LinearLayout;
+import android.widget.PopupWindow;
+import android.widget.TextView;
 import android.widget.Toast;
 
 import java.util.ArrayList;
@@ -1039,12 +1045,32 @@ public class BarChart extends View {
         requestLayout();
     }
 
+    private PopupWindow createValuePopupWindow(ArgumentDrawData item) {
+        PopupWindow pw = new PopupWindow(getContext());
+        //pw.setWidth(100);
+        //pw.setHeight(100);
+        LinearLayout mainLayout = new LinearLayout(getContext());
+        mainLayout.setLayoutParams(new ViewGroup.LayoutParams(ActionBar.LayoutParams.WRAP_CONTENT, ActionBar.LayoutParams.WRAP_CONTENT));
+        mainLayout.setPadding(20, 5, 20, 5);
+        mainLayout.setOrientation(LinearLayout.HORIZONTAL);
+        TextView tv = new TextView(getContext());
+        tv.setText(item.labelText);
+        mainLayout.addView(tv, new ViewGroup.LayoutParams(ActionBar.LayoutParams.WRAP_CONTENT, ActionBar.LayoutParams.WRAP_CONTENT));
+        pw.setContentView(mainLayout);
+        return pw;
+    }
+
     @Override
     public boolean onTouchEvent(MotionEvent event) {
         int action = event.getActionMasked();
         switch (action) {
             case MotionEvent.ACTION_DOWN:
                 ArgumentDrawData item = mChartDrawLayout.getArgumentDrawDataItemAtPos(event.getX(), event.getY());
+                if (item != null) {
+                    PopupWindow pw = createValuePopupWindow(item);
+                    pw.showAtLocation(this, Gravity.NO_GRAVITY, (int)item.barX0, (int)item.barY0);
+                    pw.update(80, 50);
+                }
                 break;
         }
 
