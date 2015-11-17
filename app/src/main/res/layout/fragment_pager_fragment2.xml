@@ -11,12 +11,30 @@
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
         android:text="@string/hello_blank_fragment_2"/>
-    <Button
-        android:id="@+id/generateFragmentButton"
-        android:layout_width="wrap_content"
+    <LinearLayout
+        android:layout_width="fill_parent"
         android:layout_height="wrap_content"
-        android:text="Generate"
-        />
+        android:orientation="horizontal"
+        >
+        <Button
+            android:id="@+id/generateFragmentButton"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="Generate"
+            />
+        <Button
+            android:id="@+id/increaseWidthButton"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="+"
+            />
+        <Button
+            android:id="@+id/decreaseWidthButton"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="-"
+            />
+    </LinearLayout>
 
     <HorizontalScrollView
         android:layout_width="fill_parent"

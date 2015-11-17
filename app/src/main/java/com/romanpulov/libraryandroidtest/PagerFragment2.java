@@ -101,6 +101,30 @@ public class PagerFragment2 extends Fragment {
             }
         });
 
+        Button increaseWidthButton = (Button) result.findViewById(R.id.increaseWidthButton);
+        increaseWidthButton.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                final BarChart barChart = (BarChart) result.findViewById(R.id.barFragmentChart2);
+                barChart.setBarItemWidth(barChart.getBarItemWidth() + barChart.getBarItemWidth() / 10);
+                barChart.updateChartLayout();
+                barChart.requestLayout();
+                barChart.invalidate();
+            }
+        });
+
+        Button decreaseWidthButton = (Button) result.findViewById(R.id.decreaseWidthButton);
+        decreaseWidthButton.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                final BarChart barChart = (BarChart) result.findViewById(R.id.barFragmentChart2);
+                barChart.setBarItemWidth(barChart.getBarItemWidth() - barChart.getBarItemWidth() / 10);
+                barChart.updateChartLayout();
+                barChart.requestLayout();
+                barChart.invalidate();
+            }
+        });
+
         return result;
 
     }

@@ -14,7 +14,9 @@ import android.os.Parcelable;
 import android.util.AttributeSet;
 import android.util.DisplayMetrics;
 import android.util.TypedValue;
+import android.view.MotionEvent;
 import android.view.View;
+import android.widget.Toast;
 
 import java.util.ArrayList;
 import java.util.Collections;
@@ -532,7 +534,8 @@ public class BarChart extends View {
         //general margin
         private static final int CHART_MARGIN = 5;
         private static final int CHART_TEXT_MARGIN = 2;
-        private static final int BAR_ITEM_WIDTH = 100;
+        private static final int MIN_BAR_ITEM_WIDTH = 20;
+        private static final int DEFAULT_BAR_ITEM_WIDTH = 100;
         private static final int AXIS_MARK_SIZE = 4;
 
         private Paint mAxesTextPaint;
@@ -554,6 +557,18 @@ public class BarChart extends View {
         private ChartAxis mYAxis = new ChartAxis(ChartAxis.AXIS_TYPE_VALUE);
         private boolean mIsLayoutValid = true;
 
+        public ChartLayout(DisplayMetrics displayMetrics) {
+            mDisplayMetrics = displayMetrics;
+            calcLayoutConstant();
+        }
+
+        private void calcLayoutConstant() {
+            mChartMargin = dpToDIP(CHART_MARGIN);
+            mChartTextMargin = dpToDIP(CHART_TEXT_MARGIN);
+            mBarItemWidth = dpToDIP(DEFAULT_BAR_ITEM_WIDTH);
+            mAxisMarkSize = dpToDIP(AXIS_MARK_SIZE);
+        }
+
         public Rect getChartRect() {
             return mChartRect;
         }
@@ -568,6 +583,10 @@ public class BarChart extends View {
 
         public int getBarItemWidth() {
             return mBarItemWidth;
+        }
+
+        public void setBarItemWidth(int value) {
+            mBarItemWidth = value < MIN_BAR_ITEM_WIDTH ? MIN_BAR_ITEM_WIDTH : value;
         }
 
         public int getItemHeight() {
@@ -603,12 +622,11 @@ public class BarChart extends View {
             mAxesTextPaint.getTextBounds("0", 0, 1, mAxesTextSymbolBounds);
         }
 
-        public void updateLayout(int width, int height, DisplayMetrics displayMetrics, SeriesList seriesList) {
+        public void updateLayout(int width, int height, SeriesList seriesList) {
             mWidth = width;
             mHeight = height;
-            mDisplayMetrics = displayMetrics;
             mSeriesList = seriesList;
-            calcLayoutConstant();
+
             calcLayout();
 
             mIsLayoutValid = mChartRect.height() > 3 * (mAxesTextSymbolBounds.height() + mChartMargin);
@@ -616,13 +634,6 @@ public class BarChart extends View {
 
         public int dpToDIP(double value) {
             return (int)TypedValue.applyDimension(TypedValue.COMPLEX_UNIT_DIP, (float)value, mDisplayMetrics);
-        }
-
-        private void calcLayoutConstant() {
-            mChartMargin = dpToDIP(CHART_MARGIN);
-            mChartTextMargin = dpToDIP(CHART_TEXT_MARGIN);
-            mBarItemWidth = dpToDIP(BAR_ITEM_WIDTH);
-            mAxisMarkSize = dpToDIP(AXIS_MARK_SIZE);
         }
 
         private void calcLayout() {
@@ -684,6 +695,9 @@ public class BarChart extends View {
         float barY0;
         float barX;
         float barY;
+        boolean containsBarPoint(float pointX, float pointY) {
+            return pointX >= barX0 && pointX <= barX && pointY >= barY0 && pointY <= barY;
+        }
     }
 
     private final static class ValueDrawData {
@@ -708,6 +722,14 @@ public class BarChart extends View {
 
         public List<ArgumentDrawData> getArgumentDrawDataList() {
             return mArgumentDrawDataList;
+        }
+
+        public ArgumentDrawData getArgumentDrawDataItemAtPos(float posX, float posY) {
+            for (ArgumentDrawData item : mArgumentDrawDataList) {
+                if (item.containsBarPoint(posX, posY))
+                    return item;
+            }
+            return null;
         }
 
         public List<ValueDrawData> getValueDrawDataList() {
@@ -869,10 +891,18 @@ public class BarChart extends View {
         //resource read complete
         a.recycle();
 
-        mChartLayout = new ChartLayout();
+        mChartLayout = new ChartLayout(getResources().getDisplayMetrics());
         mChartLayout.setAxesTextPaint(mAxesTextPaint);
         mChartDrawLayout = new ChartDrawLayout(mChartLayout);
         mChartDrawLayout.setAxesTextPaint(mAxesTextPaint);
+    }
+
+    public int getBarItemWidth() {
+        return mChartLayout.getBarItemWidth();
+    }
+
+    public void setBarItemWidth(int value) {
+        mChartLayout.setBarItemWidth(value);
     }
 
     public void updateSeriesListValueBounds() {
@@ -891,7 +921,7 @@ public class BarChart extends View {
         int widthWithoutPadding = width - getPaddingLeft() - getPaddingRight();
         int heightWithoutPadding = height - getPaddingTop() - getPaddingBottom();
 
-        mChartLayout.updateLayout(widthWithoutPadding, heightWithoutPadding, getResources().getDisplayMetrics(), mSeriesList);
+        mChartLayout.updateLayout(widthWithoutPadding, heightWithoutPadding, mSeriesList);
 
         Series series = null;
         if (mSeriesList.size() > 0)
@@ -1007,5 +1037,17 @@ public class BarChart extends View {
         updateChartLayout();
 
         requestLayout();
+    }
+
+    @Override
+    public boolean onTouchEvent(MotionEvent event) {
+        int action = event.getActionMasked();
+        switch (action) {
+            case MotionEvent.ACTION_DOWN:
+                ArgumentDrawData item = mChartDrawLayout.getArgumentDrawDataItemAtPos(event.getX(), event.getY());
+                break;
+        }
+
+        return true;
     }
 }
