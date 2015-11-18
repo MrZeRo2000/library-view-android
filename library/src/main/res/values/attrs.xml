@@ -56,5 +56,6 @@
         <attr name = "barColor" format = "color" />
         <attr name = "defaultGradientColor0" format = "color" />
         <attr name = "defaultGradientColor" format = "color" />
+        <attr name = "showLabelOnClick" format = "boolean" />
     </declare-styleable>
 </resources>

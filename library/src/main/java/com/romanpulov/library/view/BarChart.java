@@ -36,20 +36,20 @@ import java.util.Locale;
  */
 
 public class BarChart extends View {
-
-    public static final int DEFAULT_AXIS_COLOR = Color.BLACK;
-    public static final int DEFAULT_AXIS_WIDTH = 1;
-    public static final int DEFAULT_AXIS_TEXT_COLOR = Color.BLACK;
-    public static final int DEFAULT_AXIS_TEXT_SIZE = 14;
-    public static final int DEFAULT_BAR_COLOR = Color.BLACK;
-    public static final boolean DEFAULT_GRID_VISIBLE = false;
-    public static final int DEFAULT_GRID_COLOR = Color.GRAY;
-    public static final int DEFAULT_GRADIENT_COLOR = Color.BLACK;
-    public static final int LABEL_WINDOW_FRAME_DELAY = 200;
-    public static final int LABEL_WINDOW_VALUE_DURATION = 1000;
-    public static final int LABEL_WINDOW_TEXT_WIDTH_MARGIN = 12;
-    public static final int LABEL_WINDOW_TEXT_HEIGHT_MARGIN = 4;
-    public static final int LABEL_WINDOW_HEIGHT_OFFSET = 5;
+    private static final int DEFAULT_AXIS_COLOR = Color.BLACK;
+    private static final int DEFAULT_AXIS_WIDTH = 1;
+    private static final int DEFAULT_AXIS_TEXT_COLOR = Color.BLACK;
+    private static final int DEFAULT_AXIS_TEXT_SIZE = 14;
+    private static final int DEFAULT_BAR_COLOR = Color.BLACK;
+    private static final boolean DEFAULT_GRID_VISIBLE = false;
+    private static final int DEFAULT_GRID_COLOR = Color.GRAY;
+    private static final int DEFAULT_GRADIENT_COLOR = Color.BLACK;
+    private static final int LABEL_WINDOW_FRAME_DELAY = 200;
+    private static final int LABEL_WINDOW_VALUE_DURATION = 1000;
+    private static final int LABEL_WINDOW_TEXT_WIDTH_MARGIN = 12;
+    private static final int LABEL_WINDOW_TEXT_HEIGHT_MARGIN = 4;
+    private static final int LABEL_WINDOW_HEIGHT_OFFSET = 5;
+    private static final boolean DEFAULT_SHOW_LABEL_ON_CLICK = false;
     private ChartLayout mChartLayout;
     private ChartDrawLayout mChartDrawLayout;
 
@@ -61,6 +61,17 @@ public class BarChart extends View {
 
     private int mDefaultGradientColor0;
     private int mDefaultGradientColor;
+
+    private boolean mShowLabelOnClick;
+
+    public boolean getShowLabelOnClick() {
+        return mShowLabelOnClick;
+    }
+    public void setShowLabelOnClick(boolean value) {
+        mShowLabelOnClick = value;
+    }
+
+    private LabelWindow labelWindow;
 
     private SeriesList mSeriesList;
 
@@ -183,8 +194,6 @@ public class BarChart extends View {
                 return new SeriesList[size];
             }
         };
-
-
     }
     
     public static class Series implements Parcelable  {
@@ -903,6 +912,8 @@ public class BarChart extends View {
         //gradient colors
         mDefaultGradientColor0 = a.getColor(R.styleable.BarChart_defaultGradientColor0, DEFAULT_GRADIENT_COLOR);
         mDefaultGradientColor = a.getColor(R.styleable.BarChart_defaultGradientColor, DEFAULT_GRADIENT_COLOR);
+        //label on click
+        mShowLabelOnClick = a.getBoolean(R.styleable.BarChart_showLabelOnClick, DEFAULT_SHOW_LABEL_ON_CLICK);
         //resource read complete
         a.recycle();
 
@@ -1060,14 +1071,14 @@ public class BarChart extends View {
         private int textWidth;
         private int textHeight;
 
-        public void dismissWindow() {
+        private void dismissWindow() {
             if (popupWindow != null) {
                 popupWindow.dismiss();
                 popupWindow = null;
             }
         }
 
-        public void displayWindow(ArgumentDrawData dataItem) {
+        private void displayWindow(ArgumentDrawData dataItem) {
             int[] loc_int = new int[2];
             mParentView.getLocationOnScreen(loc_int);
             int windowWidth = textWidth + LABEL_WINDOW_TEXT_WIDTH_MARGIN;
@@ -1121,11 +1132,11 @@ public class BarChart extends View {
             popupWindow.setContentView(mainLayout);
         }
 
-        public PopupWindow getPopupWindow() {
+        private PopupWindow getPopupWindow() {
             return popupWindow;
         }
 
-        public void startFade() {
+        private void startFade() {
             final PopupWindow pw = getPopupWindow();
             if (pw != null) {
                 ValueAnimator.setFrameDelay(LABEL_WINDOW_FRAME_DELAY);
@@ -1147,10 +1158,11 @@ public class BarChart extends View {
         }
     }
 
-    private LabelWindow labelWindow;
-
     @Override
     public boolean onTouchEvent(MotionEvent event) {
+        if (!mShowLabelOnClick)
+            return false;
+
         int action = event.getActionMasked();
         switch (action) {
             case MotionEvent.ACTION_DOWN:
