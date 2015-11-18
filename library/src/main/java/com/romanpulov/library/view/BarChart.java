@@ -1067,31 +1067,31 @@ public class BarChart extends View {
 
     private static class LabelWindow {
         private View mParentView;
-        private PopupWindow popupWindow;
-        private int textWidth;
-        private int textHeight;
+        private PopupWindow mPopupWindow;
+        private int mTextWidth;
+        private int mTextHeight;
 
         private void dismissWindow() {
-            if (popupWindow != null) {
-                popupWindow.dismiss();
-                popupWindow = null;
+            if (mPopupWindow != null) {
+                mPopupWindow.dismiss();
+                mPopupWindow = null;
             }
         }
 
         private void displayWindow(ArgumentDrawData dataItem) {
             int[] loc_int = new int[2];
             mParentView.getLocationOnScreen(loc_int);
-            int windowWidth = textWidth + LABEL_WINDOW_TEXT_WIDTH_MARGIN;
-            int windowHeight = textHeight + LABEL_WINDOW_TEXT_HEIGHT_MARGIN;
+            int windowWidth = mTextWidth + LABEL_WINDOW_TEXT_WIDTH_MARGIN;
+            int windowHeight = mTextHeight + LABEL_WINDOW_TEXT_HEIGHT_MARGIN;
             int windowLeft = (int)(dataItem.barX0 + dataItem.barX) / 2 - windowWidth / 2;
             int windowTop = (int) dataItem.barY0 - windowHeight - LABEL_WINDOW_HEIGHT_OFFSET;
 
-            popupWindow.showAtLocation(
+            mPopupWindow.showAtLocation(
                     mParentView,
                     Gravity.LEFT | Gravity.TOP,
                     loc_int[0] + mParentView.getPaddingLeft() + windowLeft,
                     loc_int[1] + mParentView.getPaddingTop() + windowTop);
-            popupWindow.update(windowWidth, windowHeight);
+            mPopupWindow.update(windowWidth, windowHeight);
         }
 
         private LabelWindow(View parent, ArgumentDrawData drawData) {
@@ -1105,13 +1105,13 @@ public class BarChart extends View {
             TextView tv = (TextView)v.findViewById(R.id.valueTextView);
             tv.setText(drawData.valueText);
             tv.measure(0, 0);
-            textWidth = tv.getMeasuredWidth();
-            textHeight = tv.getMeasuredHeight();
-            popupWindow = new PopupWindow(v);
+            mTextWidth = tv.getMeasuredWidth();
+            mTextHeight = tv.getMeasuredHeight();
+            mPopupWindow = new PopupWindow(v);
         }
 
         private void createFromCode(ArgumentDrawData drawData) {
-            popupWindow = new PopupWindow(mParentView.getContext());
+            mPopupWindow = new PopupWindow(mParentView.getContext());
             RelativeLayout mainLayout = new RelativeLayout(mParentView.getContext());
             mainLayout.setLayoutParams(new ViewGroup.LayoutParams(ActionBar.LayoutParams.MATCH_PARENT, ActionBar.LayoutParams.MATCH_PARENT));
             TextView tv = new TextView(mParentView.getContext());
@@ -1123,17 +1123,17 @@ public class BarChart extends View {
             lp.addRule(RelativeLayout.CENTER_IN_PARENT);
             tv.setTextColor(Color.BLUE);
             tv.measure(0, 0);
-            textWidth = tv.getMeasuredWidth();
-            textHeight = tv.getMeasuredHeight();
+            mTextWidth = tv.getMeasuredWidth();
+            mTextHeight = tv.getMeasuredHeight();
             tv.setLayoutParams(lp);
             mainLayout.addView(tv, new RelativeLayout.LayoutParams(RelativeLayout.LayoutParams.MATCH_PARENT, RelativeLayout.LayoutParams.MATCH_PARENT));
             mainLayout.setBackgroundDrawable(mParentView.getResources().getDrawable(R.drawable.label_window_bg));
-            popupWindow.setBackgroundDrawable(null);
-            popupWindow.setContentView(mainLayout);
+            mPopupWindow.setBackgroundDrawable(null);
+            mPopupWindow.setContentView(mainLayout);
         }
 
         private PopupWindow getPopupWindow() {
-            return popupWindow;
+            return mPopupWindow;
         }
 
         private void startFade() {
