@@ -1,5 +1,6 @@
 package com.romanpulov.library.view;
 
+import android.animation.ValueAnimator;
 import android.app.ActionBar;
 import android.content.Context;
 import android.content.res.TypedArray;
@@ -16,13 +17,14 @@ import android.util.AttributeSet;
 import android.util.DisplayMetrics;
 import android.util.TypedValue;
 import android.view.Gravity;
+import android.view.LayoutInflater;
 import android.view.MotionEvent;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.LinearLayout;
 import android.widget.PopupWindow;
+import android.widget.RelativeLayout;
 import android.widget.TextView;
-import android.widget.Toast;
 
 import java.util.ArrayList;
 import java.util.Collections;
@@ -43,6 +45,11 @@ public class BarChart extends View {
     public static final boolean DEFAULT_GRID_VISIBLE = false;
     public static final int DEFAULT_GRID_COLOR = Color.GRAY;
     public static final int DEFAULT_GRADIENT_COLOR = Color.BLACK;
+    public static final int LABEL_WINDOW_FRAME_DELAY = 200;
+    public static final int LABEL_WINDOW_VALUE_DURATION = 1000;
+    public static final int LABEL_WINDOW_TEXT_WIDTH_MARGIN = 12;
+    public static final int LABEL_WINDOW_TEXT_HEIGHT_MARGIN = 4;
+    public static final int LABEL_WINDOW_HEIGHT_OFFSET = 5;
     private ChartLayout mChartLayout;
     private ChartDrawLayout mChartDrawLayout;
 
@@ -696,6 +703,7 @@ public class BarChart extends View {
         float labelX;
         float labelY;
         String labelText;
+        String valueText;
         Shader barShader;
         float barX0;
         float barY0;
@@ -828,6 +836,7 @@ public class BarChart extends View {
                     argumentDrawData.labelX = x - textMeasure / 2;
                     argumentDrawData.labelY = chartRect.bottom + mChartLayout.getChartTextMargin() + mAxesTextPaint.getTextSize();
                     argumentDrawData.labelText = labelText;
+                    argumentDrawData.valueText = String.valueOf(series.get(i).y.intValue());
 
                     //bar
                     double barHeight = series.get(i).y * chartRect.height() / mChartLayout.getYAxis().getAxisScale().getMaxValue();
@@ -1045,20 +1054,100 @@ public class BarChart extends View {
         requestLayout();
     }
 
-    private PopupWindow createValuePopupWindow(ArgumentDrawData item) {
-        PopupWindow pw = new PopupWindow(getContext());
-        //pw.setWidth(100);
-        //pw.setHeight(100);
-        LinearLayout mainLayout = new LinearLayout(getContext());
-        mainLayout.setLayoutParams(new ViewGroup.LayoutParams(ActionBar.LayoutParams.WRAP_CONTENT, ActionBar.LayoutParams.WRAP_CONTENT));
-        mainLayout.setPadding(20, 5, 20, 5);
-        mainLayout.setOrientation(LinearLayout.HORIZONTAL);
-        TextView tv = new TextView(getContext());
-        tv.setText(item.labelText);
-        mainLayout.addView(tv, new ViewGroup.LayoutParams(ActionBar.LayoutParams.WRAP_CONTENT, ActionBar.LayoutParams.WRAP_CONTENT));
-        pw.setContentView(mainLayout);
-        return pw;
+    private static class LabelWindow {
+        private View mParentView;
+        private PopupWindow popupWindow;
+        private int textWidth;
+        private int textHeight;
+
+        public void dismissWindow() {
+            if (popupWindow != null) {
+                popupWindow.dismiss();
+                popupWindow = null;
+            }
+        }
+
+        public void displayWindow(ArgumentDrawData dataItem) {
+            int[] loc_int = new int[2];
+            mParentView.getLocationOnScreen(loc_int);
+            int windowWidth = textWidth + LABEL_WINDOW_TEXT_WIDTH_MARGIN;
+            int windowHeight = textHeight + LABEL_WINDOW_TEXT_HEIGHT_MARGIN;
+            int windowLeft = (int)(dataItem.barX0 + dataItem.barX) / 2 - windowWidth / 2;
+            int windowTop = (int) dataItem.barY0 - windowHeight - LABEL_WINDOW_HEIGHT_OFFSET;
+
+            popupWindow.showAtLocation(
+                    mParentView,
+                    Gravity.LEFT | Gravity.TOP,
+                    loc_int[0] + mParentView.getPaddingLeft() + windowLeft,
+                    loc_int[1] + mParentView.getPaddingTop() + windowTop);
+            popupWindow.update(windowWidth, windowHeight);
+        }
+
+        private LabelWindow(View parent, ArgumentDrawData drawData) {
+            mParentView = parent;
+            createFromResource(drawData);
+        }
+
+        private void createFromResource(ArgumentDrawData drawData) {
+            LayoutInflater inflater = (LayoutInflater) mParentView.getContext().getSystemService(Context.LAYOUT_INFLATER_SERVICE);
+            View v = inflater.inflate(R.layout.label_window, null, false);
+            TextView tv = (TextView)v.findViewById(R.id.valueTextView);
+            tv.setText(drawData.valueText);
+            tv.measure(0, 0);
+            textWidth = tv.getMeasuredWidth();
+            textHeight = tv.getMeasuredHeight();
+            popupWindow = new PopupWindow(v);
+        }
+
+        private void createFromCode(ArgumentDrawData drawData) {
+            popupWindow = new PopupWindow(mParentView.getContext());
+            RelativeLayout mainLayout = new RelativeLayout(mParentView.getContext());
+            mainLayout.setLayoutParams(new ViewGroup.LayoutParams(ActionBar.LayoutParams.MATCH_PARENT, ActionBar.LayoutParams.MATCH_PARENT));
+            TextView tv = new TextView(mParentView.getContext());
+            tv.setText(drawData.labelText);
+            tv.setGravity(Gravity.CENTER);
+            RelativeLayout.LayoutParams lp = new RelativeLayout.LayoutParams(
+                    LinearLayout.LayoutParams.WRAP_CONTENT,
+                    LinearLayout.LayoutParams.WRAP_CONTENT);
+            lp.addRule(RelativeLayout.CENTER_IN_PARENT);
+            tv.setTextColor(Color.BLUE);
+            tv.measure(0, 0);
+            textWidth = tv.getMeasuredWidth();
+            textHeight = tv.getMeasuredHeight();
+            tv.setLayoutParams(lp);
+            mainLayout.addView(tv, new RelativeLayout.LayoutParams(RelativeLayout.LayoutParams.MATCH_PARENT, RelativeLayout.LayoutParams.MATCH_PARENT));
+            mainLayout.setBackgroundDrawable(mParentView.getResources().getDrawable(R.drawable.label_window_bg));
+            popupWindow.setBackgroundDrawable(null);
+            popupWindow.setContentView(mainLayout);
+        }
+
+        public PopupWindow getPopupWindow() {
+            return popupWindow;
+        }
+
+        public void startFade() {
+            final PopupWindow pw = getPopupWindow();
+            if (pw != null) {
+                ValueAnimator.setFrameDelay(LABEL_WINDOW_FRAME_DELAY);
+                ValueAnimator fadeAnimator = ValueAnimator.ofFloat(1f, 0f);
+                fadeAnimator.setDuration(LABEL_WINDOW_VALUE_DURATION);
+                fadeAnimator.addUpdateListener(new ValueAnimator.AnimatorUpdateListener() {
+                    @Override
+                    public void onAnimationUpdate(ValueAnimator animation) {
+                        float value = (float) animation.getAnimatedValue();
+                        pw.getContentView().setAlpha(value);
+                        if (value < 1e-3) {
+                            animation.cancel();
+                            dismissWindow();
+                        }
+                    }
+                });
+                fadeAnimator.start();
+            }
+        }
     }
+
+    private LabelWindow labelWindow;
 
     @Override
     public boolean onTouchEvent(MotionEvent event) {
@@ -1067,11 +1156,27 @@ public class BarChart extends View {
             case MotionEvent.ACTION_DOWN:
                 ArgumentDrawData item = mChartDrawLayout.getArgumentDrawDataItemAtPos(event.getX(), event.getY());
                 if (item != null) {
-                    PopupWindow pw = createValuePopupWindow(item);
-                    pw.showAtLocation(this, Gravity.NO_GRAVITY, (int)item.barX0, (int)item.barY0);
-                    pw.update(80, 50);
+                    if (labelWindow != null) {
+                        labelWindow.dismissWindow();
+                    }
+                    labelWindow = new LabelWindow(this, item);
+                    labelWindow.displayWindow(item);
+                } else {
+                    if (labelWindow != null) {
+                        labelWindow.dismissWindow();
+                        labelWindow = null;
+                    }
                 }
                 break;
+            case MotionEvent.ACTION_UP:
+                if (labelWindow != null)
+                    labelWindow.startFade();
+                break;
+            default:
+                if (labelWindow != null) {
+                    labelWindow.dismissWindow();
+                    labelWindow = null;
+                }
         }
 
         return true;
