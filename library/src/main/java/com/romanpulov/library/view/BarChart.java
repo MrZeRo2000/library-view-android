@@ -299,7 +299,7 @@ public class BarChart extends View {
 
         @Override
         public int compareTo(ChartValue another) {
-            return x.compareTo(((ChartValue) another).x);
+            return x.compareTo(another.x);
         }
 
         public ChartValue(Double x, String xLabel, Double y) {
@@ -706,29 +706,29 @@ public class BarChart extends View {
     }
 
     private final static class ArgumentDrawData {
-        float markX;
-        float markY0;
-        float markY;
-        float labelX;
-        float labelY;
+        int markX;
+        int markY0;
+        int markY;
+        int labelX;
+        int labelY;
         String labelText;
         String valueText;
         Shader barShader;
-        float barX0;
-        float barY0;
-        float barX;
-        float barY;
-        boolean containsBarPoint(float pointX, float pointY) {
+        int barX0;
+        int barY0;
+        int barX;
+        int barY;
+        boolean containsBarPoint(int pointX, int pointY) {
             return pointX >= barX0 && pointX <= barX && pointY >= barY0 && pointY <= barY;
         }
     }
 
     private final static class ValueDrawData {
-        float markX0;
-        float markX;
-        float markY;
-        float labelX;
-        float labelY;
+        int markX0;
+        int markX;
+        int markY;
+        int labelX;
+        int labelY;
         String labelText;
     }
 
@@ -747,7 +747,7 @@ public class BarChart extends View {
             return mArgumentDrawDataList;
         }
 
-        public ArgumentDrawData getArgumentDrawDataItemAtPos(float posX, float posY) {
+        public ArgumentDrawData getArgumentDrawDataItemAtPos(int posX, int posY) {
             for (ArgumentDrawData item : mArgumentDrawDataList) {
                 if (item.containsBarPoint(posX, posY))
                     return item;
@@ -768,6 +768,10 @@ public class BarChart extends View {
             updateValueLayout();
         }
 
+        private int getRectY(Rect rect, float value) {
+            return (int) (rect.bottom - (value * rect.height()) / mChartLayout.getYAxis().getAxisScale().getMaxValue());
+        }
+
         public void updateValueLayout() {
             //lazy list creation
             if (mValueDrawDataList == null)
@@ -778,15 +782,11 @@ public class BarChart extends View {
             final Rect chartRect = mChartLayout.getChartRect();
             int axisMarkSize = mChartLayout.getAxisMarkSize();
 
-            int axisItemHeight = mChartLayout.getItemHeight();
-            int y = chartRect.bottom;
-            double axisValueStep = mChartLayout.getYAxis().getAxisScale().getMaxValue() / mChartLayout.getYAxis().getAxisScale().getCount();
-            double axisValue = 0d;
+            float axisValueStep = (float)mChartLayout.getYAxis().getAxisScale().getMaxValue() / mChartLayout.getYAxis().getAxisScale().getCount();
+            float axisValue = 0f;
             int axisCount = mChartLayout.getYAxis().getAxisScale().getCount();
             for (int i = 0; i <= axisCount; i++) {
-                if (i == axisCount) {
-                    y = chartRect.top;
-                }
+                int y = getRectY(chartRect, axisValue);
 
                 ValueDrawData valueDrawData = new ValueDrawData();
 
@@ -796,12 +796,11 @@ public class BarChart extends View {
                 valueDrawData.labelText = ChartValueFormatter.formatValue(axisValue);
 
                 float textMeasure = mAxesTextPaint.measureText(valueDrawData.labelText, 0, valueDrawData.labelText.length());
-                valueDrawData.labelX = chartRect.left - mChartLayout.getAxisMarkSize() - textMeasure;
+                valueDrawData.labelX = (int)(chartRect.left - mChartLayout.getAxisMarkSize() - textMeasure);
                 valueDrawData.labelY = y + mChartLayout.getAxesTextSymbolBounds().height() / 2;
 
                 mValueDrawDataList.add(valueDrawData);
 
-                y -= axisItemHeight;
                 axisValue += axisValueStep;
             }
         }
@@ -842,17 +841,17 @@ public class BarChart extends View {
                         textMeasure = mChartLayout.getBarItemWidth();
                     }
 
-                    argumentDrawData.labelX = x - textMeasure / 2;
-                    argumentDrawData.labelY = chartRect.bottom + mChartLayout.getChartTextMargin() + mAxesTextPaint.getTextSize();
+                    argumentDrawData.labelX = (int)(x - textMeasure / 2);
+                    argumentDrawData.labelY = (int)(chartRect.bottom + mChartLayout.getChartTextMargin() + mAxesTextPaint.getTextSize());
                     argumentDrawData.labelText = labelText;
                     argumentDrawData.valueText = String.valueOf(series.get(i).y.intValue());
 
                     //bar
-                    double barHeight = series.get(i).y * chartRect.height() / mChartLayout.getYAxis().getAxisScale().getMaxValue();
+                    int y = getRectY(chartRect, series.get(i).y.floatValue());
                     argumentDrawData.barX0 = x - mChartLayout.getBarItemWidth() / 4;
-                    argumentDrawData.barY0 = (float) (chartRect.bottom - barHeight) + 1;
+                    argumentDrawData.barY0 = y;
                     argumentDrawData.barX = x + mChartLayout.getBarItemWidth() / 4;
-                    argumentDrawData.barY = chartRect.bottom + 1;
+                    argumentDrawData.barY = chartRect.bottom;
                     argumentDrawData.barShader = new LinearGradient(
                             argumentDrawData.barX0, argumentDrawData.barY0, argumentDrawData.barX0, argumentDrawData.barY,
                             series.getGradientColor0(), series.getGradientColor(),
@@ -1083,8 +1082,8 @@ public class BarChart extends View {
             mParentView.getLocationOnScreen(loc_int);
             int windowWidth = mTextWidth + LABEL_WINDOW_TEXT_WIDTH_MARGIN;
             int windowHeight = mTextHeight + LABEL_WINDOW_TEXT_HEIGHT_MARGIN;
-            int windowLeft = (int)(dataItem.barX0 + dataItem.barX) / 2 - windowWidth / 2;
-            int windowTop = (int) dataItem.barY0 - windowHeight - LABEL_WINDOW_HEIGHT_OFFSET;
+            int windowLeft = (dataItem.barX0 + dataItem.barX) / 2 - windowWidth / 2;
+            int windowTop =  dataItem.barY0 - windowHeight - LABEL_WINDOW_HEIGHT_OFFSET;
 
             mPopupWindow.showAtLocation(
                     mParentView,
@@ -1166,7 +1165,7 @@ public class BarChart extends View {
         int action = event.getActionMasked();
         switch (action) {
             case MotionEvent.ACTION_DOWN:
-                ArgumentDrawData item = mChartDrawLayout.getArgumentDrawDataItemAtPos(event.getX(), event.getY());
+                ArgumentDrawData item = mChartDrawLayout.getArgumentDrawDataItemAtPos((int)event.getX(), (int)event.getY());
                 if (item != null) {
                     if (labelWindow != null) {
                         labelWindow.dismissWindow();
