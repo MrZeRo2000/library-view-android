@@ -6,11 +6,13 @@ import android.content.Context;
 import android.content.res.TypedArray;
 import android.graphics.Canvas;
 import android.graphics.Color;
+import android.graphics.ColorFilter;
 import android.graphics.LinearGradient;
 import android.graphics.Paint;
 import android.graphics.Rect;
 import android.graphics.Shader;
 import android.graphics.Typeface;
+import android.graphics.drawable.Drawable;
 import android.os.Parcel;
 import android.os.Parcelable;
 import android.util.AttributeSet;
@@ -58,11 +60,19 @@ public class BarChart extends View {
     private Paint mXGridPaint;
     private Paint mYGridPaint;
     private Paint mBarPaint;
+    private Paint mLabelPaint;
 
     private int mDefaultGradientColor0;
     private int mDefaultGradientColor;
 
     private boolean mShowLabelOnClick;
+
+    private ArgumentDrawData selectedItem;
+    private ValueAnimator fadeAnimator;
+    static
+    {
+        ValueAnimator.setFrameDelay(LABEL_WINDOW_FRAME_DELAY);
+    }
 
     public boolean getShowLabelOnClick() {
         return mShowLabelOnClick;
@@ -916,10 +926,49 @@ public class BarChart extends View {
         //resource read complete
         a.recycle();
 
+        mLabelPaint = new Paint();
+        mLabelPaint.setStyle(Paint.Style.FILL);
+
         mChartLayout = new ChartLayout(getResources().getDisplayMetrics());
         mChartLayout.setAxesTextPaint(mAxesTextPaint);
         mChartDrawLayout = new ChartDrawLayout(mChartLayout);
         mChartDrawLayout.setAxesTextPaint(mAxesTextPaint);
+    }
+
+    private static class ValueLabelDrawable extends Drawable {
+        private int mAlpha = 255;
+        private ArgumentDrawData mData;
+        private Paint mPaint;
+
+        public ValueLabelDrawable(Paint paint, ArgumentDrawData data) {
+            mPaint = paint;
+            mData = data;
+            calcBounds();
+        }
+
+        private void calcBounds() {
+
+        }
+
+        @Override
+        public void draw(Canvas canvas) {
+
+        }
+
+        @Override
+        public void setAlpha(int alpha) {
+            mAlpha = alpha;
+        }
+
+        @Override
+        public void setColorFilter(ColorFilter colorFilter) {
+
+        }
+
+        @Override
+        public int getOpacity() {
+            return mAlpha;
+        }
     }
 
     public int getBarItemWidth() {
@@ -1012,6 +1061,11 @@ public class BarChart extends View {
         }
         //value axis
         canvas.drawLine(chartRect.left, chartRect.top, chartRect.left, chartRect.bottom, mAxesPaint);
+
+        if (selectedItem != null) {
+            //mLabelPaint.setColor(Color.BLACK);
+            canvas.drawText(selectedItem.labelText, selectedItem.barX0, selectedItem.barY0, mLabelPaint);
+        }
     }
 
     public static class SavedState extends BaseSavedState {
@@ -1066,31 +1120,21 @@ public class BarChart extends View {
 
     private static class LabelWindow {
         private View mParentView;
-        private PopupWindow mPopupWindow;
+        private View labelView;
         private int mTextWidth;
         private int mTextHeight;
 
         private void dismissWindow() {
-            if (mPopupWindow != null) {
-                mPopupWindow.dismiss();
-                mPopupWindow = null;
-            }
+            labelView = null;
         }
 
-        private void displayWindow(ArgumentDrawData dataItem) {
-            int[] loc_int = new int[2];
-            mParentView.getLocationOnScreen(loc_int);
-            int windowWidth = mTextWidth + LABEL_WINDOW_TEXT_WIDTH_MARGIN;
-            int windowHeight = mTextHeight + LABEL_WINDOW_TEXT_HEIGHT_MARGIN;
-            int windowLeft = (dataItem.barX0 + dataItem.barX) / 2 - windowWidth / 2;
-            int windowTop =  dataItem.barY0 - windowHeight - LABEL_WINDOW_HEIGHT_OFFSET;
-
-            mPopupWindow.showAtLocation(
-                    mParentView,
-                    Gravity.LEFT | Gravity.TOP,
-                    loc_int[0] + mParentView.getPaddingLeft() + windowLeft,
-                    loc_int[1] + mParentView.getPaddingTop() + windowTop);
-            mPopupWindow.update(windowWidth, windowHeight);
+        public void draw(Canvas canvas) {
+            if (labelView != null) {
+                //labelView.getBackground().setAlpha(100);
+                //labelView.setAlpha(0.2f);
+                labelView.layout(0, 0, mTextWidth, mTextHeight);
+                labelView.draw(canvas);
+            }
         }
 
         private LabelWindow(View parent, ArgumentDrawData drawData) {
@@ -1100,44 +1144,20 @@ public class BarChart extends View {
 
         private void createFromResource(ArgumentDrawData drawData) {
             LayoutInflater inflater = (LayoutInflater) mParentView.getContext().getSystemService(Context.LAYOUT_INFLATER_SERVICE);
-            View v = inflater.inflate(R.layout.label_window, null, false);
-            TextView tv = (TextView)v.findViewById(R.id.valueTextView);
+            labelView = inflater.inflate(R.layout.label_window, null, false);
+            /*
+            TextView tv = (TextView)labelView.findViewById(R.id.valueTextView);
             tv.setText(drawData.valueText);
             tv.measure(0, 0);
             mTextWidth = tv.getMeasuredWidth();
             mTextHeight = tv.getMeasuredHeight();
-            mPopupWindow = new PopupWindow(v);
-        }
-
-        private void createFromCode(ArgumentDrawData drawData) {
-            mPopupWindow = new PopupWindow(mParentView.getContext());
-            RelativeLayout mainLayout = new RelativeLayout(mParentView.getContext());
-            mainLayout.setLayoutParams(new ViewGroup.LayoutParams(ActionBar.LayoutParams.MATCH_PARENT, ActionBar.LayoutParams.MATCH_PARENT));
-            TextView tv = new TextView(mParentView.getContext());
-            tv.setText(drawData.labelText);
-            tv.setGravity(Gravity.CENTER);
-            RelativeLayout.LayoutParams lp = new RelativeLayout.LayoutParams(
-                    LinearLayout.LayoutParams.WRAP_CONTENT,
-                    LinearLayout.LayoutParams.WRAP_CONTENT);
-            lp.addRule(RelativeLayout.CENTER_IN_PARENT);
-            tv.setTextColor(Color.BLUE);
-            tv.measure(0, 0);
-            mTextWidth = tv.getMeasuredWidth();
-            mTextHeight = tv.getMeasuredHeight();
-            tv.setLayoutParams(lp);
-            mainLayout.addView(tv, new RelativeLayout.LayoutParams(RelativeLayout.LayoutParams.MATCH_PARENT, RelativeLayout.LayoutParams.MATCH_PARENT));
-            mainLayout.setBackgroundDrawable(mParentView.getResources().getDrawable(R.drawable.label_window_bg));
-            mPopupWindow.setBackgroundDrawable(null);
-            mPopupWindow.setContentView(mainLayout);
-        }
-
-        private PopupWindow getPopupWindow() {
-            return mPopupWindow;
+            */
+            mTextWidth = 100;
+            mTextHeight = 100;
         }
 
         private void startFade() {
-            final PopupWindow pw = getPopupWindow();
-            if (pw != null) {
+            if (labelView != null) {
                 ValueAnimator.setFrameDelay(LABEL_WINDOW_FRAME_DELAY);
                 ValueAnimator fadeAnimator = ValueAnimator.ofFloat(1f, 0f);
                 fadeAnimator.setDuration(LABEL_WINDOW_VALUE_DURATION);
@@ -1145,7 +1165,8 @@ public class BarChart extends View {
                     @Override
                     public void onAnimationUpdate(ValueAnimator animation) {
                         float value = (float) animation.getAnimatedValue();
-                        pw.getContentView().setAlpha(value);
+                        labelView.getBackground().setAlpha((int)(value * 255));
+                        mParentView.invalidate();
                         if (value < 1e-3) {
                             animation.cancel();
                             dismissWindow();
@@ -1165,28 +1186,42 @@ public class BarChart extends View {
         int action = event.getActionMasked();
         switch (action) {
             case MotionEvent.ACTION_DOWN:
-                ArgumentDrawData item = mChartDrawLayout.getArgumentDrawDataItemAtPos((int)event.getX(), (int)event.getY());
-                if (item != null) {
-                    if (labelWindow != null) {
-                        labelWindow.dismissWindow();
-                    }
-                    labelWindow = new LabelWindow(this, item);
-                    labelWindow.displayWindow(item);
-                } else {
-                    if (labelWindow != null) {
-                        labelWindow.dismissWindow();
-                        labelWindow = null;
-                    }
+                if ((fadeAnimator != null) && (fadeAnimator.isStarted())) {
+                    fadeAnimator.cancel();
                 }
+                selectedItem = mChartDrawLayout.getArgumentDrawDataItemAtPos((int)event.getX(), (int)event.getY());
+                mLabelPaint.setAlpha(255);
+                invalidate();
                 break;
             case MotionEvent.ACTION_UP:
-                if (labelWindow != null)
-                    labelWindow.startFade();
+                if (selectedItem != null) {
+                    // do something
+                    fadeAnimator = ValueAnimator.ofFloat(1f, 0f);
+                    fadeAnimator.setDuration(LABEL_WINDOW_VALUE_DURATION);
+                    fadeAnimator.addUpdateListener(new ValueAnimator.AnimatorUpdateListener() {
+                        @Override
+                        public void onAnimationUpdate(ValueAnimator animation) {
+                            float value = (float) animation.getAnimatedValue();
+                            mLabelPaint.setAlpha((int) (value * 255));
+                            //mLabelPaint.setColor(Color.RED);
+                            if (value < 1e-3) {
+                                animation.cancel();
+                                selectedItem = null;
+                            }
+                            invalidate();
+                        }
+                    });
+                    fadeAnimator.start();
+                }
                 break;
             default:
-                if (labelWindow != null) {
-                    labelWindow.dismissWindow();
-                    labelWindow = null;
+                if ((fadeAnimator != null) && (fadeAnimator.isStarted())) {
+                    fadeAnimator.cancel();
+                    mLabelPaint.setAlpha(255);
+                }
+                if (selectedItem != null) {
+                    selectedItem = null;
+                    invalidate();
                 }
         }
 
