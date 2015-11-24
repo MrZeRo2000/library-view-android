@@ -60,7 +60,6 @@ public class BarChart extends View {
     private Paint mXGridPaint;
     private Paint mYGridPaint;
     private Paint mBarPaint;
-    private Paint mLabelPaint;
 
     private int mDefaultGradientColor0;
     private int mDefaultGradientColor;
@@ -73,6 +72,7 @@ public class BarChart extends View {
     {
         ValueAnimator.setFrameDelay(LABEL_WINDOW_FRAME_DELAY);
     }
+    private ValueLabelDrawable valueLabelDrawable;
 
     public boolean getShowLabelOnClick() {
         return mShowLabelOnClick;
@@ -926,9 +926,6 @@ public class BarChart extends View {
         //resource read complete
         a.recycle();
 
-        mLabelPaint = new Paint();
-        mLabelPaint.setStyle(Paint.Style.FILL);
-
         mChartLayout = new ChartLayout(getResources().getDisplayMetrics());
         mChartLayout.setAxesTextPaint(mAxesTextPaint);
         mChartDrawLayout = new ChartDrawLayout(mChartLayout);
@@ -939,20 +936,55 @@ public class BarChart extends View {
         private int mAlpha = 255;
         private ArgumentDrawData mData;
         private Paint mPaint;
+        private Rect mTextBounds;
+        private Rect mWindowBounds;
 
-        public ValueLabelDrawable(Paint paint, ArgumentDrawData data) {
-            mPaint = paint;
+        public ValueLabelDrawable(ArgumentDrawData data) {
             mData = data;
+            mPaint = new Paint();
+            mPaint.setAntiAlias(false);
             calcBounds();
         }
 
         private void calcBounds() {
-
+            Rect measureTextBounds = new Rect();
+            mPaint.getTextBounds(mData.valueText, 0, mData.valueText.length(), measureTextBounds);
+            int windowWidth = measureTextBounds.width() + LABEL_WINDOW_TEXT_WIDTH_MARGIN;
+            int windowHeight = measureTextBounds.height() + LABEL_WINDOW_TEXT_HEIGHT_MARGIN;
+            int windowLeft = (mData.barX0 + mData.barX) / 2 - windowWidth / 2;
+            int windowTop =  mData.barY0 - windowHeight - LABEL_WINDOW_HEIGHT_OFFSET;
+            mWindowBounds = new Rect(
+                    windowLeft,
+                    windowTop,
+                    windowLeft + windowWidth,
+                    windowTop + windowHeight
+            );
+            mTextBounds = new Rect (
+                windowLeft + (windowWidth - measureTextBounds.width()) / 2,
+                windowTop - (windowHeight - measureTextBounds.height()) / 2,
+                0,
+                0
+            );
         }
 
         @Override
         public void draw(Canvas canvas) {
-
+            //background
+            /*
+            mPaint.setColor(Color.argb(mAlpha, 255, 255, 100));
+            mPaint.setStyle(Paint.Style.FILL);
+            canvas.drawRect(mWindowBounds, mPaint);
+            */
+            //frame
+            mPaint.setColor(Color.argb(mAlpha, 0, 0, 0));
+            mPaint.setStyle(Paint.Style.STROKE);
+            canvas.drawRect(mWindowBounds, mPaint);
+            //text
+            canvas.drawText(
+                    mData.valueText,
+                    mTextBounds.left,
+                    mTextBounds.top,
+                    mPaint);
         }
 
         @Override
@@ -1062,9 +1094,9 @@ public class BarChart extends View {
         //value axis
         canvas.drawLine(chartRect.left, chartRect.top, chartRect.left, chartRect.bottom, mAxesPaint);
 
-        if (selectedItem != null) {
-            //mLabelPaint.setColor(Color.BLACK);
-            canvas.drawText(selectedItem.labelText, selectedItem.barX0, selectedItem.barY0, mLabelPaint);
+        if (valueLabelDrawable != null) {
+            valueLabelDrawable.draw(canvas);
+            valueLabelDrawable.draw(canvas);
         }
     }
 
@@ -1188,10 +1220,13 @@ public class BarChart extends View {
             case MotionEvent.ACTION_DOWN:
                 if ((fadeAnimator != null) && (fadeAnimator.isStarted())) {
                     fadeAnimator.cancel();
+                    invalidate();
                 }
                 selectedItem = mChartDrawLayout.getArgumentDrawDataItemAtPos((int)event.getX(), (int)event.getY());
-                mLabelPaint.setAlpha(255);
-                invalidate();
+                if (selectedItem != null) {
+                    valueLabelDrawable = new ValueLabelDrawable(selectedItem);
+                    invalidate();
+                }
                 break;
             case MotionEvent.ACTION_UP:
                 if (selectedItem != null) {
@@ -1202,10 +1237,10 @@ public class BarChart extends View {
                         @Override
                         public void onAnimationUpdate(ValueAnimator animation) {
                             float value = (float) animation.getAnimatedValue();
-                            mLabelPaint.setAlpha((int) (value * 255));
-                            //mLabelPaint.setColor(Color.RED);
+                            valueLabelDrawable.setAlpha((int) (value * 255));
                             if (value < 1e-3) {
                                 animation.cancel();
+                                valueLabelDrawable = null;
                                 selectedItem = null;
                             }
                             invalidate();
@@ -1217,9 +1252,9 @@ public class BarChart extends View {
             default:
                 if ((fadeAnimator != null) && (fadeAnimator.isStarted())) {
                     fadeAnimator.cancel();
-                    mLabelPaint.setAlpha(255);
                 }
                 if (selectedItem != null) {
+                    valueLabelDrawable = null;
                     selectedItem = null;
                     invalidate();
                 }
