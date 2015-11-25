@@ -57,5 +57,9 @@
         <attr name = "defaultGradientColor0" format = "color" />
         <attr name = "defaultGradientColor" format = "color" />
         <attr name = "showLabelOnClick" format = "boolean" />
+        <attr name = "valueLabelBackgroundColor" format="color" />
+        <attr name = "valueLabelBorderColor" format="color" />
+        <attr name = "valueLabelTextColor" format="color" />
+        <attr name = "valueLabelTextSize" format="dimension" />
     </declare-styleable>
 </resources>
