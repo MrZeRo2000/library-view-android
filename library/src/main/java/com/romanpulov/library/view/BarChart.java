@@ -1011,6 +1011,7 @@ public class BarChart extends View {
     }
 
     private static class PointerTracker {
+        private static int MOVE_THRESHOLD = 5;
         int oldX;
         int oldY;
         int oldMotionAction;
@@ -1019,7 +1020,7 @@ public class BarChart extends View {
         int motionAction;
 
         public boolean isMoved() {
-            return (x != oldX) || (y != oldY);
+            return (Math.abs(oldX - x) > MOVE_THRESHOLD) || (Math.abs(oldY - y) > MOVE_THRESHOLD);
         }
 
         private void saveOld() {
@@ -1029,8 +1030,10 @@ public class BarChart extends View {
         }
 
         public void setMotionAction(int motionAction, int x, int y) {
-            saveOld();
-            this.motionAction = motionAction;
+            if (this.motionAction != motionAction) {
+                saveOld();
+                this.motionAction = motionAction;
+            }
             this.x = x;
             this.y = y;
         }
@@ -1186,8 +1189,8 @@ public class BarChart extends View {
     public boolean onTouchEvent(MotionEvent event) {
         if (!mShowLabelOnClick)
             return false;
-
         int action = event.getActionMasked();
+
         switch (action) {
             case MotionEvent.ACTION_POINTER_DOWN:
             case MotionEvent.ACTION_DOWN:
@@ -1195,7 +1198,7 @@ public class BarChart extends View {
                 mPointerTracker.setMotionAction(action, (int) event.getX(), (int) event.getY());
 
                 boolean needInvalidate = false;
-                if ((fadeAnimator != null) && (fadeAnimator.isStarted())) {
+                if ((fadeAnimator != null) && (fadeAnimator.isRunning())) {
                     fadeAnimator.cancel();
                     needInvalidate = true;
                 }
@@ -1234,7 +1237,7 @@ public class BarChart extends View {
                         break;
                 }
             case MotionEvent.ACTION_CANCEL:
-                if ((fadeAnimator != null) && (fadeAnimator.isStarted())) {
+                if ((fadeAnimator != null) && (fadeAnimator.isRunning())) {
                     fadeAnimator.cancel();
                 }
                 if (valueLabelDrawable != null) {
@@ -1244,15 +1247,6 @@ public class BarChart extends View {
                 mPointerTracker = null;
                 break;
             default:
-                /*
-                if ((fadeAnimator != null) && (fadeAnimator.isStarted())) {
-                    fadeAnimator.cancel();
-                }
-                if (valueLabelDrawable != null) {
-                    valueLabelDrawable = null;
-                    invalidate();
-                }
-                */
         }
         return true;
     }
