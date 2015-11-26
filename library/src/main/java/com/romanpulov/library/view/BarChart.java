@@ -1011,7 +1011,7 @@ public class BarChart extends View {
     }
 
     private static class PointerTracker {
-        private static int MOVE_THRESHOLD = 5;
+        private static int MOVE_THRESHOLD = 8;
         int oldX;
         int oldY;
         int oldMotionAction;
