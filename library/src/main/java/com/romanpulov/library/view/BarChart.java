@@ -948,7 +948,7 @@ public class BarChart extends View {
     }
 
     private class ValueLabelDrawable extends Drawable {
-        private int mAlpha = 255;
+        private int mAlpha = 0xFF;
         private ArgumentDrawData mData;
         private Rect mWindowBounds;
         private float mTextX;
@@ -1192,7 +1192,6 @@ public class BarChart extends View {
         int action = event.getActionMasked();
 
         switch (action) {
-            case MotionEvent.ACTION_POINTER_DOWN:
             case MotionEvent.ACTION_DOWN:
                 mPointerTracker = new PointerTracker();
                 mPointerTracker.setMotionAction(action, (int) event.getX(), (int) event.getY());
@@ -1210,10 +1209,9 @@ public class BarChart extends View {
                 if (needInvalidate)
                     invalidate();
                 break;
-            case MotionEvent.ACTION_POINTER_UP:
             case MotionEvent.ACTION_UP:
                 if (valueLabelDrawable != null) {
-                    fadeAnimator = ValueAnimator.ofInt(255, 0);
+                    fadeAnimator = ValueAnimator.ofInt(valueLabelDrawable.mAlpha, 0);
                     fadeAnimator.setDuration(LABEL_WINDOW_VALUE_DURATION);
                     fadeAnimator.addUpdateListener(new ValueAnimator.AnimatorUpdateListener() {
                         @Override
