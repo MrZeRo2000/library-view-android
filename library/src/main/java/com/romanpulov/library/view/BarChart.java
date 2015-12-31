@@ -728,7 +728,7 @@ public class BarChart extends View {
         int barX;
         int barY;
         boolean containsBarPoint(int pointX, int pointY) {
-            return pointX >= barX0 && pointX <= barX && pointY >= barY0 && pointY <= barY;
+            return pointX >= barX0 && pointX <= barX && pointY >= barY0;
         }
     }
 
