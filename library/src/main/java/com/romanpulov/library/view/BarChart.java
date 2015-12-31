@@ -721,15 +721,6 @@ public class BarChart extends View {
         int labelX;
         int labelY;
         String labelText;
-        String valueText;
-        Shader barShader;
-        int barX0;
-        int barY0;
-        int barX;
-        int barY;
-        boolean containsBarPoint(int pointX, int pointY) {
-            return pointX >= barX0 && pointX <= barX && pointY >= barY0;
-        }
     }
 
     private final static class ValueDrawData {
@@ -741,10 +732,23 @@ public class BarChart extends View {
         String labelText;
     }
 
+    private final static class SeriesDrawData {
+        String valueText;
+        Shader barShader;
+        int barX0;
+        int barY0;
+        int barX;
+        int barY;
+        boolean containsBarPoint(int pointX, int pointY) {
+            return pointX >= barX0 && pointX <= barX && pointY >= barY0;
+        }
+    }
+
     private final static class ChartDrawLayout {
         private ChartLayout mChartLayout;
         private List<ArgumentDrawData> mArgumentDrawDataList;
         private List<ValueDrawData> mValueDrawDataList;
+        private List<List<SeriesDrawData>> mSeriesDrawDataList;
 
         private Paint mAxesTextPaint;
 
@@ -756,10 +760,12 @@ public class BarChart extends View {
             return mArgumentDrawDataList;
         }
 
-        public ArgumentDrawData getArgumentDrawDataItemAtPos(int posX, int posY) {
-            for (ArgumentDrawData item : mArgumentDrawDataList) {
-                if (item.containsBarPoint(posX, posY))
-                    return item;
+        public SeriesDrawData getSeriesDrawDataItemAtPos(int posX, int posY) {
+            for (List<SeriesDrawData> listItem : mSeriesDrawDataList) {
+                for (SeriesDrawData item : listItem) {
+                    if (item.containsBarPoint(posX, posY))
+                        return item;
+                }
             }
             return null;
         }
@@ -772,7 +778,7 @@ public class BarChart extends View {
             mChartLayout = chartLayout;
         }
 
-        public void updateLayout(Series series) {
+        public void updateLayout(SeriesList seriesList) {
             updateArgumentLayout(series);
             updateValueLayout();
         }
@@ -1064,11 +1070,7 @@ public class BarChart extends View {
         int heightWithoutPadding = height - getPaddingTop() - getPaddingBottom();
 
         mChartLayout.updateLayout(widthWithoutPadding, heightWithoutPadding, mSeriesList);
-
-        Series series = null;
-        if (mSeriesList.size() > 0)
-            series = mSeriesList.get(0);
-        mChartDrawLayout.updateLayout(series);
+        mChartDrawLayout.updateLayout(mSeriesList);
     }
 
     @Override
