@@ -55,26 +55,4 @@ public class ApplicationTest extends ApplicationTestCase<Application> {
         Log.d("ApplicationTest", "yAxis = " + cl.getYAxis());
 
     }
-
-    public void testCase3() throws Exception{
-        BarChart bc = new BarChart(getContext());
-
-        BarChart.Series series = bc.addSeries();
-        series.addXY(0d, "A", 1d);
-        series.addXY(1d, "B", 2d);
-
-        series = bc.addSeries();
-        series.addXY(0d, "B", 1d);
-        series.addXY(1d, "C", 2d);
-
-        bc.updateSeriesListValueBounds();
-        bc.updateChartLayout();
-
-        Field chartDrawLayoutField = bc.getClass().getDeclaredField("mChartDrawLayout");
-        chartDrawLayoutField.setAccessible(true);
-        BarChart.ChartDrawLayout chartDrawLayout = (BarChart.ChartDrawLayout)chartDrawLayoutField.get(bc);
-        assertEquals(2, chartDrawLayout.getSeriesDrawDataList().size());
-        assertEquals(3, chartDrawLayout.getSeriesDrawDataList().get(0).size());
-        assertEquals(3, chartDrawLayout.getSeriesDrawDataList().get(1).size());
-    }
 }

@@ -45,7 +45,6 @@ public class BarChart extends View {
     private static final int LABEL_WINDOW_TEXT_HEIGHT_MARGIN = 4;
     private static final int LABEL_WINDOW_HEIGHT_OFFSET = 6;
     private static final boolean DEFAULT_SHOW_LABEL_ON_CLICK = false;
-    //private static final int DEFAULT_VALUE_LABEL_BACKGROUND_COLOR = Color.rgb(255, 255, 150);
     private static final int DEFAULT_VALUE_LABEL_BACKGROUND_COLOR = 0xFFFFFF96;
     private static final int DEFAULT_VALUE_LABEL_BORDER_COLOR = Color.BLACK;
     private static final int DEFAULT_VALUE_LABEL_TEXT_COLOR = Color.BLUE;
@@ -243,15 +242,15 @@ public class BarChart extends View {
             double minY = Double.MAX_VALUE;
             double maxX = Double.MIN_VALUE;
             double maxY = Double.MIN_VALUE;
-            for (ChartValue v : mData) {
-                if (minX > v.x)
-                    minX = v.x;
-                if (minY > v.y)
-                    minY = v.y;
-                if (maxX < v.x)
-                    maxX = v.x;
-                if (maxY < v.y)
-                    maxY = v.y;
+            for (ChartValue chartValue : mData) {
+                if (minX > chartValue.x)
+                    minX = chartValue.x;
+                if (minY > chartValue.y)
+                    minY = chartValue.y;
+                if (maxX < chartValue.x)
+                    maxX = chartValue.x;
+                if (maxY < chartValue.y)
+                    maxY = chartValue.y;
             }
             if (null == mValueBounds) {
                 mValueBounds = new ChartValueBounds(minX, minY, maxX, maxY);
@@ -796,10 +795,8 @@ public class BarChart extends View {
         }
 
         public void updateLayout(SeriesList seriesList) {
-            if (seriesList.size() > 0 ) {
-                updateArgumentLayout(seriesList);
-                updateSeriesDrawData(seriesList);
-            }
+            updateArgumentLayout(seriesList);
+            updateSeriesDrawData(seriesList);
             updateValueLayout();
         }
 
@@ -814,39 +811,41 @@ public class BarChart extends View {
             else
                 mSeriesDrawDataList.clear();
 
-            final Rect chartRect = mChartLayout.getChartRect();
-            final int barWidth = mChartLayout.getBarItemWidth()/2/seriesList.size();
-            int barStartLeft = 0;
+            if (seriesList.size() > 0) {
+                final Rect chartRect = mChartLayout.getChartRect();
+                final int barWidth = mChartLayout.getBarItemWidth() / 2 / seriesList.size();
+                int barStartLeft = 0;
 
-            for (Series series : seriesList) {
-                List<SeriesDrawData> seriesDrawDataList = new ArrayList<>();
-                int barLeft = chartRect.left + barStartLeft + mChartLayout.getBarItemWidth() / 4;
-                for (ArgumentDrawData argumentDrawData : mArgumentDrawDataList) {
-                    SeriesDrawData seriesDrawData = null;
+                for (Series series : seriesList) {
+                    List<SeriesDrawData> seriesDrawDataList = new ArrayList<>();
+                    int barLeft = chartRect.left + barStartLeft + mChartLayout.getBarItemWidth() / 4;
+                    for (ArgumentDrawData argumentDrawData : mArgumentDrawDataList) {
+                        SeriesDrawData seriesDrawData = null;
 
-                    for (ChartValue chartValue : series) {
-                        if (chartValue.xLabel.equals(argumentDrawData.labelText)) {
-                            seriesDrawData = new SeriesDrawData();
-                            seriesDrawData.valueText = String.valueOf(chartValue.y.intValue());
+                        for (ChartValue chartValue : series) {
+                            if (chartValue.xLabel.equals(argumentDrawData.labelText)) {
+                                seriesDrawData = new SeriesDrawData();
+                                seriesDrawData.valueText = String.valueOf(chartValue.y.intValue());
 
-                            //bar
-                            seriesDrawData.barX0 = barLeft;
-                            seriesDrawData.barY0 = getRectY(chartRect, chartValue.y.floatValue());
-                            seriesDrawData.barX = barLeft + barWidth;
-                            seriesDrawData.barY = chartRect.bottom;
-                            seriesDrawData.barShader = new LinearGradient(
-                                    seriesDrawData.barX0, seriesDrawData.barY0, seriesDrawData.barX0, seriesDrawData.barY,
-                                    series.getGradientColor0(), series.getGradientColor(),
-                                    Shader.TileMode.CLAMP);
+                                //bar
+                                seriesDrawData.barX0 = barLeft;
+                                seriesDrawData.barY0 = getRectY(chartRect, chartValue.y.floatValue());
+                                seriesDrawData.barX = barLeft + barWidth;
+                                seriesDrawData.barY = chartRect.bottom;
+                                seriesDrawData.barShader = new LinearGradient(
+                                        seriesDrawData.barX0, seriesDrawData.barY0, seriesDrawData.barX0, seriesDrawData.barY,
+                                        series.getGradientColor0(), series.getGradientColor(),
+                                        Shader.TileMode.CLAMP);
 
-                            break;
+                                break;
+                            }
                         }
+                        barLeft += mChartLayout.getBarItemWidth();
+                        seriesDrawDataList.add(seriesDrawData);
                     }
-                    barLeft += mChartLayout.getBarItemWidth();
-                    seriesDrawDataList.add(seriesDrawData);
+                    barStartLeft += barWidth;
+                    mSeriesDrawDataList.add(seriesDrawDataList);
                 }
-                barStartLeft += barWidth;
-                mSeriesDrawDataList.add(seriesDrawDataList);
             }
         }
 
