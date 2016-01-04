@@ -101,6 +101,86 @@ public class PagerFragment2 extends Fragment {
             }
         });
 
+        Button generate2Button = (Button) result.findViewById(R.id.generate2FragmentButton);
+        generate2Button.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                final BarChart barChart = (BarChart) result.findViewById(R.id.barFragmentChart2);
+                barChart.clearSeries();
+
+                int maxCount = 10;
+                int maxValue = 17;
+
+                Random rnd = new Random();
+
+                BarChart.Series series = barChart.addSeries();
+                series.setGradientColors(0xffbf8aff, 0xff008a33);
+                for (int x = 1; x <= maxCount; x++) {
+                    int y = rnd.nextInt(maxValue);
+                    series.addXY(x, String.valueOf(x), y);
+                }
+
+                rnd = new Random();
+
+                series = barChart.addSeries();
+                series.setGradientColors(0xff8abfff, 0xff8a0033);
+                for (int x = 1; x <= maxCount * 2; x+=2) {
+                    int y = rnd.nextInt(maxValue * 2);
+                    series.addXY(x, String.valueOf(x), y);
+                }
+
+                barChart.updateSeriesListValueBounds();
+                barChart.updateChartLayout();
+                barChart.requestLayout();
+                barChart.invalidate();
+            }
+        });
+
+        Button generate3Button = (Button) result.findViewById(R.id.generate3FragmentButton);
+        generate3Button.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                final BarChart barChart = (BarChart) result.findViewById(R.id.barFragmentChart2);
+                barChart.clearSeries();
+
+                int maxCount = 10;
+                int maxValue = 17;
+
+                Random rnd = new Random();
+
+                BarChart.Series series = barChart.addSeries();
+                series.setGradientColors(0xffbf8aff, 0xff008a33);
+                for (int x = 1; x <= maxCount; x++) {
+                    int y = rnd.nextInt(maxValue);
+                    series.addXY(x, String.valueOf(x), y);
+                }
+
+                rnd = new Random();
+
+                series = barChart.addSeries();
+                series.setGradientColors(0xff8abfff, 0xff8a0033);
+                for (int x = 1; x <= maxCount * 2; x+=2) {
+                    int y = rnd.nextInt(maxValue * 2);
+                    series.addXY(x, String.valueOf(x), y);
+                }
+
+                rnd = new Random();
+
+                series = barChart.addSeries();
+                series.setGradientColors(0xff8affbf, 0xff8a3300);
+                for (int x = 1; x <= maxCount; x++) {
+                    int y = rnd.nextInt(maxValue * 2);
+                    series.addXY(x, String.valueOf(x), y);
+                }
+
+                barChart.updateSeriesListValueBounds();
+                barChart.updateChartLayout();
+                barChart.requestLayout();
+                barChart.invalidate();
+            }
+        });
+
+
         Button increaseWidthButton = (Button) result.findViewById(R.id.increaseWidthButton);
         increaseWidthButton.setOnClickListener(new View.OnClickListener() {
             @Override

@@ -23,6 +23,18 @@
             android:text="Generate"
             />
         <Button
+            android:id="@+id/generate2FragmentButton"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="Generate 2"
+            />
+        <Button
+            android:id="@+id/generate3FragmentButton"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="Generate 3"
+            />
+        <Button
             android:id="@+id/increaseWidthButton"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
