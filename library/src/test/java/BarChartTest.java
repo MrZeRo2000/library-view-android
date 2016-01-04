@@ -137,7 +137,7 @@ public class BarChartTest {
         );
 
         for (int i = 0; i < valueList.size(); i ++) {
-            assertEquals(vf.formatValue(valueList.get(i)), expectedValueList.get(i));
+            assertEquals(BarChart.ChartValueFormatter.formatValue(valueList.get(i)), expectedValueList.get(i));
         }
     }
 }
