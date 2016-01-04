@@ -13,6 +13,7 @@ import com.romanpulov.library.view.BarChart;
 
 import java.util.Arrays;
 import java.util.List;
+import java.util.Locale;
 
 /**
  * Created by rpulov on 06.10.2015.
@@ -126,6 +127,7 @@ public class BarChartTest {
 
     @Test
     public void valueformatter_function() {
+        System.out.println(String.format(Locale.getDefault(), "%1.1f", 1.44345d));
 
         BarChart.ChartValueFormatter vf = new BarChart.ChartValueFormatter();
         List<Double> valueList = Arrays.asList(
@@ -133,11 +135,11 @@ public class BarChartTest {
         );
 
         List<String> expectedValueList = Arrays.asList(
-                "1.0", "1.4", "9.5", "10", "99", "534234", "5.1e+06"
+                "1", "1,4", "9,5", "10", "99", "534234", "5,1e+06"
         );
 
         for (int i = 0; i < valueList.size(); i ++) {
-            assertEquals(BarChart.ChartValueFormatter.formatValue(valueList.get(i)), expectedValueList.get(i));
+            assertEquals(expectedValueList.get(i), BarChart.ChartValueFormatter.formatValue(valueList.get(i)));
         }
     }
 }

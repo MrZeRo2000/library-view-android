@@ -45,7 +45,8 @@ public class BarChart extends View {
     private static final int LABEL_WINDOW_TEXT_HEIGHT_MARGIN = 4;
     private static final int LABEL_WINDOW_HEIGHT_OFFSET = 6;
     private static final boolean DEFAULT_SHOW_LABEL_ON_CLICK = false;
-    private static final int DEFAULT_VALUE_LABEL_BACKGROUND_COLOR = Color.rgb(255, 255, 150);
+    //private static final int DEFAULT_VALUE_LABEL_BACKGROUND_COLOR = Color.rgb(255, 255, 150);
+    private static final int DEFAULT_VALUE_LABEL_BACKGROUND_COLOR = 0xFFFFFF96;
     private static final int DEFAULT_VALUE_LABEL_BORDER_COLOR = Color.BLACK;
     private static final int DEFAULT_VALUE_LABEL_TEXT_COLOR = Color.BLUE;
     private static final int DEFAULT_VALUE_LABEL_TEXT_SIZE = 14;
@@ -756,7 +757,7 @@ public class BarChart extends View {
         }
     }
 
-    private final static class ChartDrawLayout {
+    public final static class ChartDrawLayout {
         private ChartLayout mChartLayout;
         private List<ArgumentDrawData> mArgumentDrawDataList;
         private List<ValueDrawData> mValueDrawDataList;
@@ -815,10 +816,11 @@ public class BarChart extends View {
             for (Series series : seriesList) {
                 List<SeriesDrawData> seriesDrawDataList = new ArrayList<>();
                 for (ArgumentDrawData argumentDrawData : mArgumentDrawDataList) {
-                    SeriesDrawData seriesDrawData = new SeriesDrawData();
+                    SeriesDrawData seriesDrawData = null;
 
                     for (ChartValue chartValue : series) {
                         if (chartValue.xLabel.equals(argumentDrawData.labelText)) {
+                            seriesDrawData = new SeriesDrawData();
                             seriesDrawData.valueText = String.valueOf(chartValue.y.intValue());
 
                             //bar
@@ -986,7 +988,7 @@ public class BarChart extends View {
     }
 
     public BarChart(Context context) {
-        super(context, null);
+        this(context, null);
     }
 
     public BarChart(Context context, AttributeSet attrs) {
@@ -1219,11 +1221,13 @@ public class BarChart extends View {
         for (List<SeriesDrawData> seriesDrawData : seriesDrawDataList) {
             for (SeriesDrawData sdd : seriesDrawData) {
                 //bar
-                mBarPaint.setShader(sdd.barShader);
-                mBarPaint.setStyle(Paint.Style.FILL);
-                canvas.drawRect(sdd.barX0, sdd.barY0, sdd.barX, sdd.barY, mBarPaint);
-                mBarPaint.setStyle(Paint.Style.STROKE);
-                canvas.drawRect(sdd.barX0, sdd.barY0, sdd.barX, sdd.barY, mBarPaint);
+                if (sdd != null) {
+                    mBarPaint.setShader(sdd.barShader);
+                    mBarPaint.setStyle(Paint.Style.FILL);
+                    canvas.drawRect(sdd.barX0, sdd.barY0, sdd.barX, sdd.barY, mBarPaint);
+                    mBarPaint.setStyle(Paint.Style.STROKE);
+                    canvas.drawRect(sdd.barX0, sdd.barY0, sdd.barX, sdd.barY, mBarPaint);
+                }
             }
         }
 
