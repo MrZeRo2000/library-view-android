@@ -732,6 +732,7 @@ public class BarChart extends View {
         int markY;
         int labelX;
         int labelY;
+        String labelValue;
         String labelText;
     }
 
@@ -823,7 +824,7 @@ public class BarChart extends View {
                         SeriesDrawData seriesDrawData = null;
 
                         for (ChartValue chartValue : series) {
-                            if (chartValue.xLabel.equals(argumentDrawData.labelText)) {
+                            if (chartValue.xLabel.equals(argumentDrawData.labelValue)) {
                                 seriesDrawData = new SeriesDrawData();
                                 seriesDrawData.valueText = String.valueOf(chartValue.y.intValue());
 
@@ -901,7 +902,7 @@ public class BarChart extends View {
                     //find existing chart value
                     boolean skipChartValue = false;
                     for (ArgumentDrawData argumentDrawData : mArgumentDrawDataList) {
-                        if (argumentDrawData.labelText.equals(chartValue.xLabel)) {
+                        if (argumentDrawData.labelValue.equals(chartValue.xLabel)) {
                             skipChartValue = true;
                             break;
                         }
@@ -916,6 +917,7 @@ public class BarChart extends View {
                         argumentDrawData.markX = x + axisItemWidth / 2;
                         argumentDrawData.markY0 = chartRect.bottom - axisMarkSize;
                         argumentDrawData.markY = chartRect.bottom + axisMarkSize;
+                        argumentDrawData.labelValue = chartValue.xLabel;
 
                         //draw label
                         String labelText = chartValue.xLabel;

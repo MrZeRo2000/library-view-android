@@ -170,7 +170,7 @@ public class PagerFragment2 extends Fragment {
                 series.setGradientColors(0xff8affbf, 0xff8a3300);
                 for (int x = 1; x <= maxCount; x++) {
                     int y = rnd.nextInt(maxValue * 2);
-                    series.addXY(x, String.valueOf(x), y);
+                    series.addXY(x, "Very long label" + String.valueOf(x), y);
                 }
 
                 barChart.updateSeriesListValueBounds();
