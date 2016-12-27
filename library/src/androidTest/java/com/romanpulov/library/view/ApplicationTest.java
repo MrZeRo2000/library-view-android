@@ -55,4 +55,35 @@ public class ApplicationTest extends ApplicationTestCase<Application> {
         Log.d("ApplicationTest", "yAxis = " + cl.getYAxis());
 
     }
+
+    public void testChartSorting() {
+        BarChart bc = new BarChart(getContext());
+        assertNotNull(bc);
+        BarChart.Series series = bc.addSeries();
+        series.addXY(3., "Three", 1.);
+        series.addXY(1., "One", 1.);
+        series.addXY(2., "Two", 1.);
+        assertEquals(3., series.get(0).x, 1e-7);
+        bc.sortSeries(0);
+        assertEquals(1., series.get(0).x, 1e-7);
+        assertEquals(2., series.get(1).x, 1e-7);
+        assertEquals(3., series.get(2).x, 1e-7);
+        Log.d("ApplicationTest", "chart_sorting completed");
+    }
+
+    public void testValueBounds() {
+        BarChart bc = new BarChart(getContext());
+        assertNotNull(bc);
+        BarChart.Series series = bc.addSeries();
+        series.addXY(3., "Three", 7.);
+        series.addXY(1., "One", -1.);
+        series.addXY(2., "Two", 6.);
+        series.updateValueBounds();
+        BarChart.ChartValueBounds vb = series.getValueBounds();
+        assertEquals(1., vb.minX, 1e-7);
+        assertEquals(3., vb.maxX, 1e-7);
+        assertEquals(-1., vb.minY, 1e-7);
+        assertEquals(7., vb.maxY, 1e-7);
+        Log.d("ApplicationTest", "value_bounds completed");
+    }
 }

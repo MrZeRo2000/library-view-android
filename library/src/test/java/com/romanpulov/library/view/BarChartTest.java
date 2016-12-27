@@ -1,3 +1,4 @@
+package com.romanpulov.library.view;
 
 import android.graphics.Paint;
 import android.util.DisplayMetrics;
@@ -26,7 +27,6 @@ public class BarChartTest {
         System.out.println("first_test completed");
     }
 
-    @Test
     public void chart_sorting() {
         BarChart bc = new BarChart(null);
         assertNotNull(bc);
@@ -42,7 +42,6 @@ public class BarChartTest {
         System.out.println("chart_sorting completed");
     }
 
-    @Test
     public void value_bounds() {
         BarChart bc = new BarChart(null);
         assertNotNull(bc);
