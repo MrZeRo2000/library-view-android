@@ -71,6 +71,9 @@ public class PagerFragment2 extends Fragment {
         // Inflate the layout for this fragment
         final View result =  inflater.inflate(R.layout.fragment_pager_fragment2, container, false);
 
+        final EditText maxCountEditText = (EditText) result.findViewById(R.id.maxCountEditText);
+        final EditText maxValueEditText = (EditText) result.findViewById(R.id.maxValueEditText);
+
         Button generateButton = (Button) result.findViewById(R.id.generateFragmentButton);
         generateButton.setOnClickListener(new View.OnClickListener() {
             @Override
@@ -78,8 +81,8 @@ public class PagerFragment2 extends Fragment {
                 final BarChart barChart = (BarChart) result.findViewById(R.id.barFragmentChart2);
                 barChart.clearSeries();
 
-                int maxCount = 10;
-                int maxValue = 17;
+                int maxCount = Integer.valueOf(maxCountEditText.getText().toString());
+                int maxValue = Integer.valueOf(maxValueEditText.getText().toString());
 
                 BarChart.Series series = barChart.addSeries();
                 series.setGradientColors(0xffbf8aff, 0xff008a33);
@@ -108,8 +111,8 @@ public class PagerFragment2 extends Fragment {
                 final BarChart barChart = (BarChart) result.findViewById(R.id.barFragmentChart2);
                 barChart.clearSeries();
 
-                int maxCount = 10;
-                int maxValue = 17;
+                int maxCount = Integer.valueOf(maxCountEditText.getText().toString());
+                int maxValue = Integer.valueOf(maxValueEditText.getText().toString());
 
                 Random rnd = new Random();
 
@@ -143,8 +146,8 @@ public class PagerFragment2 extends Fragment {
                 final BarChart barChart = (BarChart) result.findViewById(R.id.barFragmentChart2);
                 barChart.clearSeries();
 
-                int maxCount = 10;
-                int maxValue = 17;
+                int maxCount = Integer.valueOf(maxCountEditText.getText().toString());
+                int maxValue = Integer.valueOf(maxValueEditText.getText().toString());
 
                 Random rnd = new Random();
 

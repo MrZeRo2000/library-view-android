@@ -471,7 +471,7 @@ public class BarChart extends View {
                 return;
             }
 
-            if (value <= maxCount) {
+            if ((value <= maxCount) && (maxCount < 10)) {
                 mMaxValue = maxCount;
                 mCount = maxCount;
                 return;

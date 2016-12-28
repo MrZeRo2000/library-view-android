@@ -119,6 +119,20 @@ public class BarChartTest {
         }
     }
 
+    @Test
+    public void axisScaleCalculatorClassSmallValues() {
+        System.out.println("axisScaleCalculatorClassSmallValues ======================");
+        BarChart.AxisScaleCalculator ac = new BarChart.ValueAxisScaleCalculator();
+        BarChart.AxisScale as = new BarChart.AxisScale();
+        for (int i = 2; i < 11; i++) {
+            as.setScale(0d, i, 24);
+            ac.calcAxisScale(as);
+            System.out.println("" + i + " " + as);
+        }
+        System.out.println("axisScaleCalculatorClassSmallValues ======================");
+    }
+
+
     private String formatValue(double value) {
         return String.valueOf(value);
     }
