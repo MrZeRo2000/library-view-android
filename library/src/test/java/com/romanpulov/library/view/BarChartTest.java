@@ -121,17 +121,24 @@ public class BarChartTest {
 
     @Test
     public void axisScaleCalculatorClassSmallValues() {
+        int[] counts = new int[] {2, 3, 4, 5, 6, 10};
+
         System.out.println("axisScaleCalculatorClassSmallValues ======================");
         BarChart.AxisScaleCalculator ac = new BarChart.ValueAxisScaleCalculator();
         BarChart.AxisScale as = new BarChart.AxisScale();
-        for (int i = 2; i < 11; i++) {
-            as.setScale(0d, i, 24);
-            ac.calcAxisScale(as);
-            System.out.println("" + i + " " + as);
+        for (int i = 2; i < 200; i++) {
+            String s = String.format(Locale.getDefault(), "%3d", i);
+            for (int j : counts) {
+                as.setScale(0d, i, j);
+                ac.calcAxisScale(as);
+                s += String.format(Locale.getDefault(), " %3d/%-3d", as.getCount(), (int)as.getMaxValue());
+                if (i < as.getMaxValue() / 2)
+                    s += " (!)";
+            }
+            System.out.println(s);
         }
         System.out.println("axisScaleCalculatorClassSmallValues ======================");
     }
-
 
     private String formatValue(double value) {
         return String.valueOf(value);
