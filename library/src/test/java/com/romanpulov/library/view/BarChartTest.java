@@ -134,11 +134,54 @@ public class BarChartTest {
                 s += String.format(Locale.getDefault(), " %3d/%-3d", as.getCount(), (int)as.getMaxValue());
                 if (i < as.getMaxValue() / 2)
                     s += " (!)";
+                if ((int)as.getMaxValue() % as.getCount() >0)
+                    s+= " (*)";
+                if (i == (int)as.getMaxValue())
+                    s += " (@)";
             }
             System.out.println(s);
         }
         System.out.println("axisScaleCalculatorClassSmallValues ======================");
     }
+
+    @Test
+    public void axisScaleCalculatorClass_10_6() {
+        BarChart.AxisScaleCalculator ac = new BarChart.ValueAxisScaleCalculator();
+        BarChart.AxisScale as = new BarChart.AxisScale();
+        as.setScale(0d, 10, 6);
+        ac.calcAxisScale(as);
+        System.out.println(ac);
+    }
+
+    @Test
+    public void axisScaleCalculatorClass_5_6() {
+        BarChart.AxisScaleCalculator ac = new BarChart.ValueAxisScaleCalculator();
+        BarChart.AxisScale as = new BarChart.AxisScale();
+        as.setScale(0d, 5, 6);
+        ac.calcAxisScale(as);
+        System.out.println(ac);
+    }
+
+
+    @Test
+    public void axisScaleCalculatorClass_2_2() {
+        BarChart.AxisScaleCalculator ac = new BarChart.ValueAxisScaleCalculator();
+        BarChart.AxisScale as = new BarChart.AxisScale();
+        as.setScale(0d, 2, 2);
+        ac.calcAxisScale(as);
+        System.out.println(ac);
+    }
+
+
+    @Test
+    public void axisScaleCalculatorClass_3_3() {
+        BarChart.AxisScaleCalculator ac = new BarChart.ValueAxisScaleCalculator();
+        BarChart.AxisScale as = new BarChart.AxisScale();
+        as.setScale(0d, 3, 3);
+        ac.calcAxisScale(as);
+        System.out.println(ac);
+    }
+
 
     private String formatValue(double value) {
         return String.valueOf(value);

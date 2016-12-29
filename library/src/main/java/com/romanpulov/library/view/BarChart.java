@@ -465,13 +465,21 @@ public class BarChart extends View {
             else if (maxCount > 6)
                 maxCount = 6;
 
+            // for 1
             if (value == 1) {
                 mMaxValue = 2.;
-                mCount = 1;
+                mCount = 2;
                 return;
             }
 
-            if ((value <= maxCount) && (maxCount < 10)) {
+            // for 2
+            if ((value == 2) && (maxCount > 5)) {
+                mMaxValue = 4.;
+                mCount = 4;
+                return;
+            }
+
+            if ((value < maxCount) && (maxCount < 10)) {
                 mMaxValue = maxCount;
                 mCount = maxCount;
                 return;
@@ -533,7 +541,7 @@ public class BarChart extends View {
             if ((mCount > 2) && (mCount < 10)) {
                 calcAxisScale(value, mCount - 1);
                 // revert original if no good
-                if ((mMaxValue - value) >= origGap) {
+                if (((mMaxValue - value) >= origGap) || (mMaxValue - value < 1)) {
                     mMaxValue = origMaxValue;
                     mCount = origCount;
                 }
