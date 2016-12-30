@@ -1,8 +1,12 @@
 package com.romanpulov.library.view;
 
+import junit.framework.Assert;
+import junit.framework.AssertionFailedError;
+
 import org.junit.Test;
 
 import java.util.Locale;
+import java.util.zip.Adler32;
 
 /**
  * Created by romanpulov on 30.12.2016.
@@ -153,6 +157,64 @@ public class AxisScaleTest {
         NewValueAxisScaleCalculator calculator = new NewValueAxisScaleCalculator();
         calculator.calcAxisScale(as);
         System.out.println(as);
+    }
+
+    private void testAxisScalesCalculator(BarChart.AxisScaleCalculator calculator, boolean skipNoGap) {
+        BarChart.AxisScale as = new BarChart.AxisScale();
+        for (int i = 2; i < 300; i++) {
+            String s = String.format(Locale.getDefault(), "%3d", i);
+            for (int j = 2; j < 9; j++) {
+                as.setScale(0d, i, j);
+                calculator.calcAxisScale(as);
+
+                try {
+                    // invalid count
+                    Assert.assertTrue(as.getCount() <= j);
+
+                    // invalid max value
+                    Assert.assertTrue(as.getMaxValue() > i);
+
+                    // no gap
+                    if (!skipNoGap)
+                        Assert.assertFalse(i == (int) as.getMaxValue());
+
+                    // fractional step
+                    if ((int) as.getMaxValue() % as.getCount() > 0)
+                        System.out.println("Warning : fractional step: " + "(" + i + "/" + j + ") - " + "(" + (int) as.getMaxValue() + "/" + as.getCount() + ")");
+
+                    // big MaxValue
+                    if (i < as.getMaxValue() / 2)
+                        System.out.println("Warning : big MaxValue: " + "(" + i + "/" + j + ") - " + "(" + (int) as.getMaxValue() + "/" + as.getCount() + ")");
+
+                } catch (AssertionFailedError e) {
+                    System.out.println("Assertion data: " + "(" + i + "/" + j + ") - " + "(" + (int) as.getMaxValue() + "/" + as.getCount() + ")");
+                    throw e;
+                }
+            }
+        }
+    }
+
+    @Test
+    public void newAxisScalesCalculatorValidator() {
+        testAxisScalesCalculator(new NewValueAxisScaleCalculator(), false);
+    }
+
+    @Test
+    public void axisScalesCalculatorValidator() {
+        testAxisScalesCalculator(new BarChart.ValueAxisScaleCalculator(), true);
+    }
+
+    @Test
+    public void axisValueCalculator_adaptive() {
+        BarChart.ValueAxisScaleCalculator ax = new BarChart.ValueAxisScaleCalculator();
+        for (int i = 1; i < 101; i++) {
+            ax.calcAxisScale(i, 7);
+            System.out.println("CalcForValue:");
+            System.out.println(ax);
+            ax.calcAxisScaleAdaptive(i, 7);
+            System.out.println("CalcForValueAdaptive:");
+            System.out.println(ax);
+        }
     }
 
 }
