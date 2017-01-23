@@ -8,6 +8,7 @@ import android.graphics.Color;
 import android.graphics.ColorFilter;
 import android.graphics.LinearGradient;
 import android.graphics.Paint;
+import android.graphics.PixelFormat;
 import android.graphics.Rect;
 import android.graphics.Shader;
 import android.graphics.Typeface;
@@ -391,7 +392,7 @@ public class BarChart extends View {
                     break;
                 case AXIS_TYPE_VALUE:
                     mAxisScale.setScale(minValue, iMaxValue, maxCount);
-                    AxisScaleCalculator ax = new BarChart.ValueAxisScaleCalculator();
+                    AxisScaleCalculator ax = new BarChart.ProportionalValueAxisScaleCalculator();
                     ax.calcAxisScale(mAxisScale);
                     break;
                 default:
@@ -447,6 +448,9 @@ public class BarChart extends View {
         void calcAxisScale(AxisScale axisScale);
     }
 
+    /**
+     * Excel-like Value Axis Scale Calculator
+     */
     public static class ValueAxisScaleCalculator implements AxisScaleCalculator {
         private int mValue;
         private int mFirstNum;
@@ -578,6 +582,89 @@ public class BarChart extends View {
                 return String.format(Locale.getDefault(), "%.0f", value);
             } else
                 return String.format(Locale.getDefault(), "%3.1e", value);
+        }
+    }
+
+    /**
+     * Proportional Value Axis Scale Calculator
+     * Aimed to remediate shortcomings of Excel-like scale calculator
+     */
+    public static class ProportionalValueAxisScaleCalculator implements BarChart.AxisScaleCalculator {
+
+        static class AxisScaleData {
+            final int mMaxValue;
+            final int mCount;
+
+            AxisScaleData(int maxValue, int count) {
+                mMaxValue = maxValue;
+                mCount = count;
+            }
+        }
+
+        AxisScaleData getAxisScaleData(int maxValue, int count, int decrement) {
+            // for value = 1
+            if (maxValue == 1) {
+                return new AxisScaleData(2, 2);
+            }
+
+            // for value = 2
+            if (maxValue == 2) {
+                if (count > 3)
+                    return new AxisScaleData(4, 4);
+                else
+                    return new AxisScaleData(4, 2);
+            }
+
+            // for count = 2
+            if (count == 2) {
+                return new AxisScaleData(maxValue * count, count);
+            }
+
+            // use decreased count first
+            count = count - decrement;
+
+            int calcMaxValue = (maxValue / count + 1) * count;
+            int step = calcMaxValue / count;
+
+            if ((calcMaxValue - maxValue) < step) {
+                // increase count using decrement
+                if (decrement > 0) {
+                    calcMaxValue = calcMaxValue + step;
+                    count++;
+                } else
+                    return null;
+            } else {
+                // try without decrement if it was not used
+                if (decrement > 0) {
+                    AxisScaleData data = getAxisScaleData(maxValue, count + decrement, 0);
+                    if (data != null)
+                        return data;
+                }
+            }
+
+            return new AxisScaleData(calcMaxValue, count);
+        }
+
+        @Override
+        public void calcAxisScale(BarChart.AxisScale axisScale) {
+            int count = axisScale.getCount();
+
+            //count correction
+            if (count > 9)
+                count = 9;
+
+            AxisScaleData minAxisScaleData = null;
+            for (int c = count; c > 1; c--) {
+                AxisScaleData axisScaleData = getAxisScaleData((int)axisScale.getMaxValue(), c, 1);
+                if (minAxisScaleData == null)
+                    minAxisScaleData = axisScaleData;
+                else
+                    if (axisScaleData.mMaxValue < minAxisScaleData.mMaxValue)
+                        minAxisScaleData = axisScaleData;
+            }
+
+            if (minAxisScaleData != null)
+                axisScale.setScale(0, minAxisScaleData.mMaxValue, minAxisScaleData.mCount);
         }
     }
 
@@ -1084,7 +1171,7 @@ public class BarChart extends View {
 
         @Override
         public int getOpacity() {
-            return mAlpha;
+            return PixelFormat.TRANSLUCENT;
         }
     }
 
