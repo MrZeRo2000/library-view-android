@@ -250,20 +250,25 @@ public class SlideNumberPicker extends View implements GestureDetector.OnGesture
         super.onDraw(canvas);
 
         // control frame
+        mPaint.setStyle(Style.STROKE);
         mPaint.setColor(mFrameColor);
         canvas.drawRect(0, 0, getWidth(), getHeight(), mPaint);
 
         if (mItemHeight > 0) {
             // draw current value
             int itemOffset = (mCurrentScrollOffset > 0) ? mCurrentScrollOffset % mItemHeight - mItemHeight : mCurrentScrollOffset % mItemHeight;
+            mPaint.setStyle(Style.STROKE);
             canvas.drawRect(0, itemOffset, getWidth(), getHeight() + itemOffset, mPaint);
+            mPaint.setStyle(Style.FILL);
             mPaint.setColor(mTextColor);
             canvas.drawText(mDisplayValues.get(mCurrentValue), getWidth() / 2, getHeight() / 2 + itemOffset, mPaint);
 
             // draw next value
             itemOffset += mItemHeight;
+            mPaint.setStyle(Style.STROKE);
             mPaint.setColor(mFrameColor);
             canvas.drawRect(0, itemOffset, getWidth(), getHeight() + itemOffset, mPaint);
+            mPaint.setStyle(Style.FILL);
             mPaint.setColor(mTextColor);
             canvas.drawText(mDisplayValues.get(mNextValue), getWidth() / 2, getHeight() / 2 + itemOffset, mPaint);
         }

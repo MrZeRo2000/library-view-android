@@ -77,7 +77,7 @@ public class ProgressCircle extends View {
         //text paint
         mTextPaint = new Paint();
         mTextPaint.setAntiAlias(true);
-        mTextPaint.setStyle(Paint.Style.STROKE);
+        mTextPaint.setStyle(Paint.Style.FILL);
         mTextPaint.setTextAlign(Align.LEFT);
 
         //arc paint
