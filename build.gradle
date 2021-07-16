@@ -3,24 +3,17 @@
 buildscript {
     repositories {
         google()
-        jcenter()
+        mavenCentral()
     }
     dependencies {
-        classpath 'com.android.tools.build:gradle:3.5.2'
-
-        /*
-        http://brianattwell.com/distributing-android-libs-via-jcenter/
-        */
-        classpath 'com.jfrog.bintray.gradle:gradle-bintray-plugin:1.8.0'
-        classpath 'com.github.dcendents:android-maven-gradle-plugin:2.1'
-
+        classpath 'com.android.tools.build:gradle:4.1.1'
     }
 }
 
 allprojects {
     repositories {
         google()
-        jcenter()
+        mavenCentral()
     }
 
     gradle.projectsEvaluated {
@@ -28,4 +21,8 @@ allprojects {
             options.compilerArgs << "-Xlint:unchecked" << "-Xlint:deprecation"
         }
     }
+}
+
+task clean(type: Delete) {
+    delete rootProject.buildDir
 }

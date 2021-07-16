@@ -1,4 +1,17 @@
 apply plugin: 'com.android.library'
+apply plugin: 'maven-publish'
+
+ext {
+    // Maven metadata
+    publishedGroupId = 'com.romanpulov.library.view'
+    libraryName = 'library'
+    // Save yourself a head ache, and set this equal to the name of the Android Studio library
+    // module. The artifact name needs to match the name of the library.
+    artifact = 'library'
+
+    libraryDescription = 'Roman Pulov visual library for Android'
+    libraryVersion = '1.1.2'
+}
 
 android {
 
@@ -6,14 +19,14 @@ android {
         abortOnError true
     }
 
-    compileSdkVersion 29
-    buildToolsVersion "29.0.2"
+    compileSdkVersion 30
+    buildToolsVersion "30.0.3"
 
     defaultConfig {
         minSdkVersion 14
-        targetSdkVersion 29
+        targetSdkVersion 30
         versionCode 1
-        versionName "1.1.1"
+        versionName "1.1.2"
     }
     buildTypes {
         release {
@@ -25,38 +38,34 @@ android {
 
 dependencies {
     // Unit testing dependencies
-    testImplementation 'junit:junit:4.12'
+    testImplementation 'junit:junit:4.13.2'
     implementation fileTree(dir: 'libs', include: ['*.jar'])
 }
 
-ext {
-    // Where you will see your artifact in Bintray's web interface
-    // The "bintrayName" should match the name of the Bintray repro.
-    bintrayRepo = 'maven'
-    bintrayName = 'romanpulov-library-view'
+// Because the components are created only during the afterEvaluate phase, you must
+// configure your publications using the afterEvaluate() lifecycle method.
+afterEvaluate {
+    publishing {
+        publications {
+            // Creates a Maven publication called "release".
+            release(MavenPublication) {
+                // Applies the component for the release build variant.
+                from components.release
 
-    // Maven metadata
-    publishedGroupId = 'com.romanpulov.library.view'
-    libraryName = 'library'
-    // Save yourself a head ache, and set this equal to the name of the Android Studio library
-    // module. The artifact name needs to match the name of the library.
-    artifact = 'library'
+                // You can then customize attributes of the publication as shown below.
+                groupId = publishedGroupId
+                artifactId = artifact
+                version = libraryVersion
+            }
+            // Creates a Maven publication called “debug”.
+            debug(MavenPublication) {
+                // Applies the component for the debug build variant.
+                from components.debug
 
-    libraryDescription = 'Roman Pulov visual library for Android'
-    libraryVersion = '1.1.1'
-
-    developerId = 'romanpulov'
-    developerName = 'Roman Pulov'
-    developerEmail = 'roman.pulov@at.com'
-
-    siteUrl = 'https://github.com/MrZeRo2000/libraryandroidtest-android'
-    gitUrl = 'https://github.com/MrZeRo2000/libraryandroidtest-android.git'
-
-    licenseName = 'Apache License, Version 2.0'
-    licenseUrl = 'http://www.apache.org/licenses/LICENSE-2.0.txt'
-
-    allLicenses = ["Apache-2.0"]
+                groupId = publishedGroupId
+                artifactId = 'library-debug'
+                version = libraryVersion
+            }
+        }
+    }
 }
-
-apply from: 'https://raw.githubusercontent.com/MrZeRo2000/JCenter/master/installv1.gradle'
-apply from: 'https://raw.githubusercontent.com/MrZeRo2000/JCenter/master/bintrayv1.gradle'
