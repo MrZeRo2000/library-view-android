@@ -10,23 +10,18 @@ ext {
     artifact = 'library'
 
     libraryDescription = 'Roman Pulov visual library for Android'
-    libraryVersion = '1.1.3'
+    libraryVersion = '1.1.5'
 }
 
 android {
 
-    lintOptions {
-        abortOnError true
-    }
 
-    compileSdkVersion 30
+    compileSdkVersion 31
     buildToolsVersion "30.0.3"
 
     defaultConfig {
         minSdkVersion 14
-        targetSdkVersion 30
-        versionCode 1
-        versionName "1.1.2"
+        targetSdkVersion 31
     }
     buildTypes {
         release {
@@ -34,12 +29,25 @@ android {
             proguardFiles getDefaultProguardFile('proguard-android.txt'), 'proguard-rules.pro'
         }
     }
+    lint {
+        abortOnError true
+    }
 }
 
 dependencies {
     // Unit testing dependencies
     testImplementation 'junit:junit:4.13.2'
     implementation fileTree(dir: 'libs', include: ['*.jar'])
+}
+
+android {
+    publishing {
+        singleVariant('release') {
+        }
+        singleVariant('debug') {
+            withSourcesJar()
+        }
+    }
 }
 
 // Because the components are created only during the afterEvaluate phase, you must
