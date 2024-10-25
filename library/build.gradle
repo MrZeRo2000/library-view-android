@@ -10,16 +10,16 @@ ext {
     artifact = 'library'
 
     libraryDescription = 'Roman Pulov visual library for Android'
-    libraryVersion = '1.1.7'
+    libraryVersion = '1.1.8'
 }
 
 android {
     namespace = "com.romanpulov.library.view"
 
     defaultConfig {
-        compileSdk 34
-        minSdkVersion 14
-        targetSdkVersion 34
+        compileSdk 35
+        minSdkVersion 24
+        targetSdkVersion 35
     }
 
     buildTypes {
