@@ -1,49 +1,44 @@
 package com.romanpulov.libraryandroidtest;
 
-import android.app.Activity;
-import android.app.FragmentManager;
 import android.os.Bundle;
-import android.app.Fragment;
-import androidx.legacy.app.FragmentPagerAdapter;
-import androidx.viewpager.widget.ViewPager;
+import androidx.annotation.NonNull;
+import androidx.appcompat.app.AppCompatActivity;
+import androidx.fragment.app.Fragment;
+import androidx.fragment.app.FragmentManager;
+import androidx.lifecycle.Lifecycle;
+import androidx.viewpager2.adapter.FragmentStateAdapter;
+import androidx.viewpager2.widget.ViewPager2;
 
-public class PagerActivity extends Activity {
+public class PagerActivity extends AppCompatActivity {
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_pager);
 
-        ViewPager pager = (ViewPager) findViewById(R.id.pager);
-        pager.setAdapter(new TestPagerAdapter(getFragmentManager()));
+        ViewPager2 pager = findViewById(R.id.pager);
+        pager.setAdapter(new TestPagerAdapter(getSupportFragmentManager(), getLifecycle()));
     }
 
-    public static class TestPagerAdapter extends FragmentPagerAdapter {
+    public static class TestPagerAdapter extends FragmentStateAdapter {
 
-        public TestPagerAdapter(FragmentManager fragmentManager) {
-            super(fragmentManager);
+        public TestPagerAdapter(@NonNull FragmentManager fragmentManager, @NonNull Lifecycle lifecycle) {
+            super(fragmentManager, lifecycle);
+        }
+
+        @NonNull
+        @Override
+        public Fragment createFragment(int position) {
+            return switch (position) {
+                case 0 -> PagerFragment1.newInstance();
+                case 1 -> PagerFragment2.newInstance();
+                default -> throw new RuntimeException("Invalid position");
+            };
         }
 
         @Override
-        public Fragment getItem(int position) {
-            switch (position) {
-                case 0:
-                    return PagerFragment1.newInstance("p1", "p2");
-                case 1:
-                    return PagerFragment2.newInstance("p1", "p2");
-                default:
-                    return null;
-            }
-        }
-
-        @Override
-        public int getCount() {
+        public int getItemCount() {
             return 2;
-        }
-
-        @Override
-        public String getPageTitle(int position) {
-            return "Item " + position;
         }
     }
 

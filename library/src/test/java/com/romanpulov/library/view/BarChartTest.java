@@ -1,20 +1,13 @@
 package com.romanpulov.library.view;
 
-import android.graphics.Paint;
-import android.util.DisplayMetrics;
-
+import org.junit.Ignore;
 import org.junit.Test;
-
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertFalse;
-import static org.junit.Assert.assertNotNull;
-import static org.junit.Assert.assertTrue;
-
-import com.romanpulov.library.view.BarChart;
 
 import java.util.Arrays;
 import java.util.List;
 import java.util.Locale;
+
+import static org.junit.Assert.*;
 
 /**
  * Created by rpulov on 06.10.2015.
@@ -23,10 +16,12 @@ public class BarChartTest {
 
     @Test
     public void first_test() {
-        assertFalse(1==2);
+        assertNotEquals(1, 2);
         System.out.println("first_test completed");
     }
 
+    @Test
+    @Ignore("Need to mock")
     public void chart_sorting() {
         BarChart bc = new BarChart(null);
         assertNotNull(bc);
@@ -42,6 +37,8 @@ public class BarChartTest {
         System.out.println("chart_sorting completed");
     }
 
+    @Test
+    @Ignore("Need to mock")
     public void value_bounds() {
         BarChart bc = new BarChart(null);
         assertNotNull(bc);
@@ -59,7 +56,7 @@ public class BarChartTest {
     }
 
     @Test
-    public void chartaxis_maxvalue() {
+    public void chart_axis_maxvalue() {
         BarChart.ChartAxis va = new BarChart.ChartAxis(BarChart.ChartAxis.AXIS_TYPE_ARGUMENT);
         va.setRange(0d, 8d, 100);
         assertEquals(0d, va.getAxisScale().getMinValue(), 1e-7);
@@ -68,31 +65,29 @@ public class BarChartTest {
         BarChart.ChartAxis vv = new BarChart.ChartAxis(BarChart.ChartAxis.AXIS_TYPE_VALUE);
         vv.setRange(0d, 8d, 100);
         assertEquals(0d, vv.getAxisScale().getMinValue(), 1e-7);
-        assertEquals(10d, vv.getAxisScale().getMaxValue(), 1e-7);
+        // for Excel like ValueAxisScaleCalculator
+        // assertEquals(10d, vv.getAxisScale().getMaxValue(), 1e-7);
+        assertEquals(9d, vv.getAxisScale().getMaxValue(), 1e-7);
 
         vv.setRange(0d, 23d, 100);
         assertEquals(0d, vv.getAxisScale().getMinValue(), 1e-7);
-        assertEquals(25d, vv.getAxisScale().getMaxValue(), 1e-7);
+        // for Excel like ValueAxisScaleCalculator
+        // assertEquals(25d, vv.getAxisScale().getMaxValue(), 1e-7);
+        assertEquals(27d, vv.getAxisScale().getMaxValue(), 1e-7);
 
         System.out.println("chartaxis_maxvalue completed");
     }
 
-    private String formatValue(double value) {
-        return String.valueOf(value);
-    }
-
-
     @Test
-    public void valueformatter_function() {
-        System.out.println(String.format(Locale.getDefault(), "%1.1f", 1.44345d));
+    public void value_formatter_function() {
+        System.out.printf(Locale.getDefault(), "%1.1f%n", 1.44345d);
 
-        BarChart.ChartValueFormatter vf = new BarChart.ChartValueFormatter();
         List<Double> valueList = Arrays.asList(
                 1d, 1.44345d, 9.4678d, 10d, 99d, 534234d, 5123423d
         );
 
         List<String> expectedValueList = Arrays.asList(
-                "1", "1,4", "9,5", "10", "99", "534234", "5,1e+06"
+                "1", "1.4", "9.5", "10", "99", "534234", "5.1e+06"
         );
 
         for (int i = 0; i < valueList.size(); i ++) {

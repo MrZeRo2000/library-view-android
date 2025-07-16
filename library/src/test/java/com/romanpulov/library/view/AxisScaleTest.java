@@ -1,8 +1,7 @@
 package com.romanpulov.library.view;
 
-import junit.framework.Assert;
 import junit.framework.AssertionFailedError;
-
+import org.junit.Assert;
 import org.junit.Test;
 
 import java.util.Locale;
@@ -16,21 +15,21 @@ public class AxisScaleTest {
     private void printAxisScales(BarChart.AxisScaleCalculator calculator) {
         BarChart.AxisScale as = new BarChart.AxisScale();
         for (int i = 2; i < 300; i++) {
-            String s = String.format(Locale.getDefault(), "%3d", i);
+            StringBuilder s = new StringBuilder(String.format(Locale.getDefault(), "%3d", i));
             for (int j = 2; j < 9; j++) {
                 as.setScale(0d, i, j);
                 calculator.calcAxisScale(as);
-                s += String.format(Locale.getDefault(), " %3d/%-3d", as.getCount(), (int)as.getMaxValue());
+                s.append(String.format(Locale.getDefault(), " %3d/%-3d", as.getCount(), (int) as.getMaxValue()));
                 if (i < as.getMaxValue() / 2)
-                    s += " (!)";
+                    s.append(" (!)");
                 if ((int)as.getMaxValue() % as.getCount() >0)
-                    s+= " (*)";
+                    s.append(" (*)");
                 if (i == (int)as.getMaxValue())
-                    s += " (@)";
+                    s.append(" (@)");
                 if (i > (int)as.getMaxValue())
-                    s += " (E)";
+                    s.append(" (E)");
                 if (j < as.getCount())
-                    s += " (C)";
+                    s.append(" (C)");
             }
             System.out.println(s);
         }
@@ -80,7 +79,6 @@ public class AxisScaleTest {
     private void testAxisScalesCalculator(BarChart.AxisScaleCalculator calculator, boolean skipNoGap) {
         BarChart.AxisScale as = new BarChart.AxisScale();
         for (int i = 2; i < 300; i++) {
-            String s = String.format(Locale.getDefault(), "%3d", i);
             for (int j = 2; j < 9; j++) {
                 as.setScale(0d, i, j);
                 calculator.calcAxisScale(as);
@@ -94,7 +92,7 @@ public class AxisScaleTest {
 
                     // no gap
                     if (!skipNoGap)
-                        Assert.assertFalse(i == (int) as.getMaxValue());
+                        Assert.assertNotEquals(i, (int) as.getMaxValue());
 
                     // fractional step
                     if ((int) as.getMaxValue() % as.getCount() > 0)
