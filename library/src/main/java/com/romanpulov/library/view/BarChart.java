@@ -20,6 +20,7 @@ import android.util.DisplayMetrics;
 import android.util.TypedValue;
 import android.view.MotionEvent;
 import android.view.View;
+import androidx.annotation.NonNull;
 
 import java.util.ArrayList;
 import java.util.Collections;
@@ -51,23 +52,23 @@ public class BarChart extends View {
     private static final int DEFAULT_VALUE_LABEL_TEXT_COLOR = Color.BLUE;
     private static final int DEFAULT_VALUE_LABEL_TEXT_SIZE = 14;
 
-    private ChartLayout mChartLayout;
-    private ChartDrawLayout mChartDrawLayout;
+    private final ChartLayout mChartLayout;
+    private final ChartDrawLayout mChartDrawLayout;
 
-    private Paint mAxesPaint;
-    private Paint mAxesTextPaint;
+    private final Paint mAxesPaint;
+    private final Paint mAxesTextPaint;
     private Paint mXGridPaint;
     private Paint mYGridPaint;
-    private Paint mBarPaint;
+    private final Paint mBarPaint;
     //label
-    private Paint mLabelBackgroundPaint;
-    private Paint mLabelBorderPaint;
-    private Paint mLabelTextPaint;
+    private final Paint mLabelBackgroundPaint;
+    private final Paint mLabelBorderPaint;
+    private final Paint mLabelTextPaint;
 
-    private int mDefaultGradientColor0;
-    private int mDefaultGradientColor;
+    private final int mDefaultGradientColor0;
+    private final int mDefaultGradientColor;
 
-    private boolean mShowLabelOnClick;
+    private final boolean mShowLabelOnClick;
     private PointerTracker mPointerTracker;
 
     private ValueAnimator fadeAnimator;
@@ -76,13 +77,6 @@ public class BarChart extends View {
         ValueAnimator.setFrameDelay(LABEL_WINDOW_FRAME_DELAY);
     }
     private ValueLabelDrawable valueLabelDrawable;
-
-    public boolean getShowLabelOnClick() {
-        return mShowLabelOnClick;
-    }
-    public void setShowLabelOnClick(boolean value) {
-        mShowLabelOnClick = value;
-    }
 
     private SeriesList mSeriesList;
 
@@ -125,10 +119,6 @@ public class BarChart extends View {
             this.maxY = maxY;
         }
 
-        public double[] getBounds() {
-            return new double[] {minX, minY, maxX, maxY};
-        }
-        
         public void resetBounds() {
             minX = maxX = minY = maxY = 0d;
         }
@@ -137,6 +127,7 @@ public class BarChart extends View {
     public static class SeriesList implements Iterable<Series>, Parcelable  {
         private List<Series> mData = new ArrayList<>();
 
+        @NonNull
         @Override
         public Iterator<Series> iterator() {
             return mData.iterator();
@@ -202,7 +193,7 @@ public class BarChart extends View {
             mData = in.readParcelable(SeriesList.class.getClassLoader());
         }
 
-        public static final Parcelable.Creator<SeriesList> CREATOR = new Parcelable.Creator<SeriesList>() {
+        public static final Parcelable.Creator<SeriesList> CREATOR = new Parcelable.Creator<>() {
             public SeriesList createFromParcel(Parcel in) {
                 return new SeriesList(in);
             }
@@ -214,7 +205,7 @@ public class BarChart extends View {
     }
     
     public static class Series implements Iterable<ChartValue>, Parcelable  {
-        private List<ChartValue> mData = new ArrayList<>();
+        private final List<ChartValue> mData = new ArrayList<>();
 
         public Series() {
 
@@ -292,7 +283,7 @@ public class BarChart extends View {
         }
 
         public static final Parcelable.Creator<Series> CREATOR
-                = new Parcelable.Creator<Series>() {
+                = new Parcelable.Creator<>() {
             public Series createFromParcel(Parcel in) {
                 return new Series(in);
             }
@@ -308,6 +299,7 @@ public class BarChart extends View {
             mGradientColor = in.readInt();
         }
 
+        @NonNull
         @Override
         public Iterator<ChartValue> iterator() {
             return mData.iterator();
@@ -343,7 +335,7 @@ public class BarChart extends View {
         }
 
         public static final Parcelable.Creator<ChartValue> CREATOR
-                = new Parcelable.Creator<ChartValue>() {
+                = new Parcelable.Creator<>() {
             public ChartValue createFromParcel(Parcel in) {
                 return new ChartValue(in);
             }
@@ -368,8 +360,8 @@ public class BarChart extends View {
         public static final int AXIS_TYPE_ARGUMENT = 0;
         public static final int AXIS_TYPE_VALUE = 1;
 
-        private int mAxisType;
-        private AxisScale mAxisScale = new AxisScale();
+        private final int mAxisType;
+        private final AxisScale mAxisScale = new AxisScale();
 
         public AxisScale getAxisScale() {
             return mAxisScale;
@@ -400,11 +392,12 @@ public class BarChart extends View {
             }
         }
 
+        @NonNull
         @Override
         public String toString() {
             return "{AxisType=" +
                     mAxisType + ", " +
-                    "AxisScale=" + mAxisScale.toString() +
+                    "AxisScale=" + mAxisScale +
                     "}";
         }
     }
@@ -438,6 +431,7 @@ public class BarChart extends View {
             mCount = 0;
         }
 
+        @NonNull
         @Override
         public String toString() {
             return String.format(Locale.getDefault(), "[maxValue=%f, count=%d]", mMaxValue, mCount);
@@ -528,7 +522,7 @@ public class BarChart extends View {
                 mCount = maxCount;
                 if (mScaleFactor == 2)
                     mScaleFactor = 5;
-                mMaxValue = mValue / maxCount;
+                mMaxValue = (double) mValue / maxCount;
                 mMaxValue = (mMaxValue - (mMaxValue % mScaleFactor) + mScaleFactor) * mCount;
             }
         }
@@ -552,6 +546,7 @@ public class BarChart extends View {
             }
         }
 
+        @NonNull
         @Override
         public String toString() {
             return "value=" + mValue + ", " +
@@ -677,11 +672,11 @@ public class BarChart extends View {
         private static final int AXIS_MARK_SIZE = 4;
 
         private Paint mAxesTextPaint;
-        private Rect mAxesTextSymbolBounds = new Rect();
+        private final Rect mAxesTextSymbolBounds = new Rect();
         //input data
         private int mWidth;
         private int mHeight;
-        private DisplayMetrics mDisplayMetrics;
+        private final DisplayMetrics mDisplayMetrics;
         private SeriesList mSeriesList;
         //calculated
         private int mCalcWidth;
@@ -690,9 +685,9 @@ public class BarChart extends View {
         private int mChartTextMargin;
         private int mBarItemWidth;
         private int mAxisMarkSize;
-        private Rect mChartRect = new Rect();
-        private ChartAxis mXAxis = new ChartAxis(ChartAxis.AXIS_TYPE_ARGUMENT);
-        private ChartAxis mYAxis = new ChartAxis(ChartAxis.AXIS_TYPE_VALUE);
+        private final Rect mChartRect = new Rect();
+        private final ChartAxis mXAxis = new ChartAxis(ChartAxis.AXIS_TYPE_ARGUMENT);
+        private final ChartAxis mYAxis = new ChartAxis(ChartAxis.AXIS_TYPE_VALUE);
         private boolean mIsLayoutValid = true;
 
         public ChartLayout(DisplayMetrics displayMetrics) {
@@ -711,10 +706,6 @@ public class BarChart extends View {
             return mChartRect;
         }
 
-        public int getChartMargin() {
-            return mChartMargin;
-        }
-
         public int getChartTextMargin() {
             return mChartTextMargin;
         }
@@ -724,11 +715,7 @@ public class BarChart extends View {
         }
 
         public void setBarItemWidth(int value) {
-            mBarItemWidth = value < MIN_BAR_ITEM_WIDTH ? MIN_BAR_ITEM_WIDTH : value;
-        }
-
-        public int getItemHeight() {
-            return mCalcItemHeight;
+            mBarItemWidth = Math.max(value, MIN_BAR_ITEM_WIDTH);
         }
 
         public int getAxisMarkSize() {
@@ -745,10 +732,6 @@ public class BarChart extends View {
 
         public ChartAxis getYAxis() {
             return mYAxis;
-        }
-
-        public boolean getLayoutValid() {
-            return mIsLayoutValid;
         }
 
         public Rect getAxesTextSymbolBounds() {
@@ -804,6 +787,7 @@ public class BarChart extends View {
             mCalcItemHeight = mChartRect.height() / mYAxis.getAxisScale().getCount();
         }
 
+        @NonNull
         @Override
         public String toString() {
             return "{" +
@@ -853,7 +837,7 @@ public class BarChart extends View {
     }
 
     private final static class ChartDrawLayout {
-        private ChartLayout mChartLayout;
+        private final ChartLayout mChartLayout;
         private List<ArgumentDrawData> mArgumentDrawDataList;
         private List<ValueDrawData> mValueDrawDataList;
         private List<List<SeriesDrawData>> mSeriesDrawDataList;
@@ -1114,7 +1098,7 @@ public class BarChart extends View {
 
     private class ValueLabelDrawable extends Drawable {
         private int mAlpha = 0xFF;
-        private SeriesDrawData mData;
+        private final SeriesDrawData mData;
         private Rect mWindowBounds;
         private float mTextX;
         private float mTextY;
@@ -1138,8 +1122,8 @@ public class BarChart extends View {
                     windowLeft + windowWidth,
                     windowTop + windowHeight
             );
-            mTextX = windowLeft + (windowWidth - measureTextBounds.width()) / 2;
-            mTextY = windowTop + (windowHeight + measureTextBounds.height()) / 2;
+            mTextX = windowLeft + (float) (windowWidth - measureTextBounds.width()) / 2;
+            mTextY = windowTop + (float) (windowHeight + measureTextBounds.height()) / 2;
         }
 
         @Override
@@ -1169,6 +1153,7 @@ public class BarChart extends View {
             throw new UnsupportedOperationException();
         }
 
+        @SuppressWarnings("deprecation")
         @Override
         public int getOpacity() {
             return PixelFormat.TRANSLUCENT;
@@ -1243,7 +1228,7 @@ public class BarChart extends View {
     }
 
     @Override
-    protected void onDraw(Canvas canvas) {
+    protected void onDraw(@NonNull Canvas canvas) {
         super.onDraw(canvas);
 
         final Rect chartRect = mChartLayout.getChartRect();
@@ -1325,7 +1310,7 @@ public class BarChart extends View {
         }
 
         public static final Parcelable.Creator<SavedState> CREATOR
-                = new Parcelable.Creator<SavedState>() {
+                = new Parcelable.Creator<>() {
             public SavedState createFromParcel(Parcel in) {
                 return new SavedState(in);
             }
@@ -1384,17 +1369,14 @@ public class BarChart extends View {
                 if (valueLabelDrawable != null) {
                     fadeAnimator = ValueAnimator.ofInt(valueLabelDrawable.mAlpha, 0);
                     fadeAnimator.setDuration(LABEL_WINDOW_VALUE_DURATION);
-                    fadeAnimator.addUpdateListener(new ValueAnimator.AnimatorUpdateListener() {
-                        @Override
-                        public void onAnimationUpdate(ValueAnimator animation) {
-                            int value = (int) animation.getAnimatedValue();
-                            valueLabelDrawable.setAlpha(value);
-                            if (value == 0) {
-                                animation.cancel();
-                                valueLabelDrawable = null;
-                            }
-                            invalidate();
+                    fadeAnimator.addUpdateListener(animation -> {
+                        int value = (int) animation.getAnimatedValue();
+                        valueLabelDrawable.setAlpha(value);
+                        if (value == 0) {
+                            animation.cancel();
+                            valueLabelDrawable = null;
                         }
+                        invalidate();
                     });
                     fadeAnimator.start();
                 }
